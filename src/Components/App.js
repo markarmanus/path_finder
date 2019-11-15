@@ -3,6 +3,7 @@ import Grid from "./Grid"
 function App() {
   return (
     <div>
+      <Player></Player>
       <Grid></Grid>
     </div>
   )
