@@ -8,7 +8,7 @@ export class Grid extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      selectedTexture: TEXTURES.LAVA,
+      selectedTexture: TEXTURES.OBSIDIAN,
       mouseDown: false,
       texturesMap: new Array(CONFIG.GRID_WIDTH * CONFIG.GRID_HEIGHT).fill(
         TEXTURES.OBSIDIAN
