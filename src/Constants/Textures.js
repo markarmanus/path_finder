@@ -24,7 +24,7 @@ export const TEXTURE_DATA = {
     src: "lava.png"
   },
   3: {
-    animationSpeed: "0.5s",
+    animationSpeed: "0.3s",
     animated: true,
     spriteWidth: "32px",
     spriteHeight: "32px",
@@ -32,12 +32,12 @@ export const TEXTURE_DATA = {
     src: "Character_Right.png"
   },
   4: {
-    animationSpeed: "0.5s",
+    animationSpeed: null,
     animated: false,
     spriteWidth: "32px",
     spriteHeight: "32px",
-    numberOfSprites: 4,
-    src: "Character_Down.png"
+    numberOfSprites: 1,
+    src: "Character_Idle.png"
   },
   5: {
     animationSpeed: "0.5s",
@@ -49,7 +49,7 @@ export const TEXTURE_DATA = {
   },
   6: {
     animationSpeed: "0.5s",
-    animated: true,
+    animated: false,
     spriteWidth: "32px",
     spriteHeight: "32px",
     numberOfSprites: 4,

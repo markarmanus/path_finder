@@ -1,5 +1,3 @@
 export const CONFIG = {
-  GRID_WIDTH: 30,
-  GRID_HEIGHT: 8,
-  PLAYER_SPEED: 100
+  PLAYER_SPEED: 80
 }

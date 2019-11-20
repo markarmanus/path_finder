@@ -3,8 +3,6 @@ import { TEXTURES, TEXTURE_DATA } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
 import styled, { keyframes } from "styled-components"
 
-let textureWidth = window.innerWidth / CONFIG.GRID_WIDTH
-let textureHeight = window.innerHeight / CONFIG.GRID_HEIGHT
 const getAnimation = numberOfSprites => {
   const translationTo = ((numberOfSprites - 1) / numberOfSprites) * 100
   const transform = keyframes`
@@ -40,29 +38,44 @@ export class Texture extends Component {
     this.state = {}
   }
   shouldComponentUpdate(nextProps) {
-    return nextProps.texture !== this.props.texture
+    return (
+      nextProps.texture !== this.props.texture ||
+      nextProps.textureSize !== this.props.textureSize
+    )
   }
 
   render() {
-    const textureData = TEXTURE_DATA[this.props.texture]
+    const {
+      yOffset,
+      xOffset,
+      y,
+      x,
+      onMouseDown,
+      onMouseUp,
+      onMouseHoverTexture,
+      texture,
+      textureSize
+    } = this.props
+    const textureData = TEXTURE_DATA[texture]
+
     return (
       <div
         style={{
           position: "absolute",
-          height: textureHeight,
-          width: textureWidth,
-          top: this.props.y * textureHeight,
-          left: this.props.x * textureWidth,
+          height: textureSize + "px",
+          width: textureSize + "px",
+          top: yOffset ? y * textureSize + yOffset : y * textureSize,
+          left: xOffset ? x * textureSize + xOffset : x * textureSize,
           overflow: "hidden"
         }}
       >
         <Sprite
           textureData={textureData}
-          onMouseDown={this.props.onMouseDown}
-          onMouseUp={this.props.onMouseUp}
-          onMouseEnter={this.props.onMouseHoverTexture}
-          onTouchEnd={this.props.onMouseUp}
-          onTouchStart={this.props.onMouseDown}
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
+          onMouseEnter={onMouseHoverTexture}
+          onTouchEnd={onMouseUp}
+          onTouchStart={onMouseDown}
         ></Sprite>
       </div>
     )

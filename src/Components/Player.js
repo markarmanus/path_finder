@@ -8,8 +8,9 @@ const PlayerSprite = styled.div`
   position: absolute;
 `
 let moves = [
-  [1, -1],
+  [-1, 0],
   [1, 0],
+  [-1, 0],
   [1, 0]
 ]
 
@@ -22,7 +23,7 @@ export class Player extends Component {
     }
     this.move = this.move.bind(this)
     this.setCorrectTexture = this.setCorrectTexture.bind(this)
-    this.setCorrectRotation = this.setCorrectRotation.bind(this)
+    this.setCorrectDirection = this.setCorrectDirection.bind(this)
   }
   componentDidMount() {
     if (moves.length > 0) {
@@ -51,14 +52,17 @@ export class Player extends Component {
         : TEXTURES.PLAYER_RUNNING
     this.setState({ currentTexture: texture })
   }
-  setCorrectRotation(entity, direction) {
-    if (direction[0] === -1) entity.style.transform = "scaleX(-1);"
+  setCorrectDirection(entity, direction) {
+    if (direction[0] === -1) {
+      entity.firstChild.style.transform = "scaleX(-1)"
+    } else {
+      entity.firstChild.style.transform = "scaleX(1)"
+    }
   }
   move(direction) {
     this.setCorrectTexture(direction)
     let player = document.getElementById("player")
-    this.setCorrectRotation(player, direction)
-
+    this.setCorrectDirection(player, direction)
     let top = player.offsetTop
     let left = player.offsetLeft
     var id = setInterval(frame.bind(this), 100 - CONFIG.PLAYER_SPEED)
