@@ -2,7 +2,6 @@ import React, { Component } from "react"
 import Texture from "./Texture"
 import { TEXTURES } from "../Constants/Textures"
 import styled from "styled-components"
-import { CONFIG } from "../Constants/Config"
 
 const CharacterSprite = styled.div`
   position: absolute;
