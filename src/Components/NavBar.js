@@ -2,6 +2,7 @@ import React, { Component } from "react"
 import styled from "styled-components"
 import { Slider, Button, Typography, Select, Icon } from "antd"
 import "antd/dist/antd.css"
+import { TEXTURES } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
 
 const Container = styled.div`
@@ -51,17 +52,14 @@ const Label = styled(Typography.Text)`
   width: 25%;
 `
 
-const Title = styled(Typography.Title)`
-  color: white !important;
-  display: inline-block;
-  font-size: 2vw !important;
-
-  text-align: center;
-
-  margin: 0 5px !important;
+const DoneButton = styled(Button)`
+  margin-left: 10px;
+  transition: visibility 0.3s linear, opacity 0.3s linear;
+  visibility: ${props => (props.visible ? "visible" : "hidden")};
+  opacity: ${props => (props.visible ? "1" : "0")};
 `
 const StyledSelector = styled(Select)`
-  width: 100%;
+  width: 90%;
 `
 const SliderContainer = styled.div`
   display: flex;
@@ -75,49 +73,71 @@ export default class NavBar extends Component {
       <Container>
         <Left>
           <StyledSelector
-            defaultValue={
-              <span>
-                <Icon style={{ marginRight: "4px" }} type="edit" />
-                Edit Map
-              </span>
+            value={
+              this.props.editing ? (
+                this.props.selectedEditTexture
+              ) : (
+                <span>
+                  <Icon style={{ marginRight: "4px" }} type="edit" />
+                  Edit Map
+                </span>
+              )
             }
-            styled={{ width: "100%" }}
+            onSelect={texture => {
+              this.props.setEditing(true)
+              this.props.onSelectEditTexture(texture)
+            }}
           >
-            <Select.Option value="Floor">Draw Floor</Select.Option>
-            <Select.Option value="Lava">Draw Lava</Select.Option>
-            <Select.Option value="Walls">Draw Walls</Select.Option>
+            <Select.Option value={TEXTURES.OBSIDIAN}>Draw Floor</Select.Option>
+            <Select.Option value={TEXTURES.LAVA}>Draw Lava</Select.Option>
+            <Select.Option value={TEXTURES.PLAYER_RUNNING}>Draw Walls</Select.Option>
           </StyledSelector>
+          <DoneButton
+            visible={this.props.editing}
+            onClick={() => this.props.setEditing(false)}
+            type="secondary"
+          >
+            Done
+          </DoneButton>
         </Left>
         <Center>
           <SliderContainer>
             <Label>Player Speed</Label>
             <StyledSlider tooltipPlacement={"right"} />
           </SliderContainer>
-          <StyledButton type="secondary">Place Officer</StyledButton>
-          <StyledButton type="primary">Start</StyledButton>
-          <StyledButton type="secondary">Place Thief</StyledButton>
+          <StyledButton
+            onClick={() => this.props.onSelectEditTexture(TEXTURES.PLAYER_IDLE)}
+            type="secondary"
+          >
+            Place Officer
+          </StyledButton>
+          <StyledButton onClick={() => this.props.onClickStart()} type="primary">
+            Start
+          </StyledButton>
+          <StyledButton
+            onClick={() => this.props.onSelectEditTexture(TEXTURES.THIEF_IDLE)}
+            type="secondary"
+          >
+            Place Thief
+          </StyledButton>
           <SliderContainer>
             <Label>Map Scale</Label>
             <StyledSlider
-              min={50}
-              max={150}
+              min={CONFIG.MIN_TEXTURE_SIZE}
+              max={CONFIG.MAX_TEXTURE_SIZE}
               onChange={this.props.setTextureSize}
+              defaultValue={this.props.textureSize}
               tooltipPlacement={"right"}
             />
           </SliderContainer>
         </Center>
         <Right>
           <StyledButton
-            style={{ width: "50%", margin: "10px 5%" }}
+            style={{ width: "50%" }}
+            onClick={() => this.props.onClickUndo()}
             type="secondary"
           >
             Undo
-          </StyledButton>
-          <StyledButton
-            style={{ width: "50%", margin: "10px 5%" }}
-            type="secondary"
-          >
-            Redo
           </StyledButton>
         </Right>
       </Container>

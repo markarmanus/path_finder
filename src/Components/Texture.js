@@ -28,6 +28,7 @@ const Sprite = styled.div`
     steps(${props => props.textureData.numberOfSprites - 1})
     ${props => (props.textureData.animated ? "infinite" : 0)};
   position: absolute;
+  user-select: none;
   left: 0;
   top: 0;
 `
@@ -40,7 +41,11 @@ export class Texture extends Component {
   shouldComponentUpdate(nextProps) {
     return (
       nextProps.texture !== this.props.texture ||
-      nextProps.textureSize !== this.props.textureSize
+      nextProps.textureSize !== this.props.textureSize ||
+      nextProps.x !== this.props.x ||
+      nextProps.y !== this.props.y ||
+      nextProps.xOffset !== this.props.xOffset ||
+      nextProps.yOffset !== this.props.yOffset
     )
   }
 
@@ -52,7 +57,8 @@ export class Texture extends Component {
       x,
       onMouseDown,
       onMouseUp,
-      onMouseHoverTexture,
+      onMouseHoverTextureEnter,
+      onMouseHoverTextureLeave,
       texture,
       textureSize
     } = this.props
@@ -66,14 +72,16 @@ export class Texture extends Component {
           width: textureSize + "px",
           top: yOffset ? y * textureSize + yOffset : y * textureSize,
           left: xOffset ? x * textureSize + xOffset : x * textureSize,
-          overflow: "hidden"
+          overflow: "hidden",
+          userSelect: "none"
         }}
       >
         <Sprite
           textureData={textureData}
           onMouseDown={onMouseDown}
           onMouseUp={onMouseUp}
-          onMouseEnter={onMouseHoverTexture}
+          onMouseEnter={onMouseHoverTextureEnter}
+          onMouseLeave={onMouseHoverTextureLeave}
           onTouchEnd={onMouseUp}
           onTouchStart={onMouseDown}
         ></Sprite>

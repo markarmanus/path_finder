@@ -3,78 +3,156 @@ import styled from "styled-components"
 import Texture from "./Texture"
 import { TEXTURES } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
+import Character from "./Character"
 
+const Container = styled.div`
+  flex: 1;
+  position: relative;
+  background-image: url("Background.PNG");
+`
 export class Grid extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      selectedTexture: TEXTURES.OBSIDIAN,
-      mouseDown: false
+      texturesMap: [],
+      edits: [],
+      gridWidth: 0,
+      gridHeight: 0,
+      xOffset: 0,
+      yOffset: 0,
+      playerLocation: null,
+      thiefLocation: null,
+      mouseOverX: null,
+      test: true,
+      mouseOverY: null,
+      mouseDown: false,
+      playerMoves: [[0, 1]]
     }
     this.onMouseDown = this.onMouseDown.bind(this)
     this.onMouseUp = this.onMouseUp.bind(this)
-    this.onMouseHoverTexture = this.onMouseHoverTexture.bind(this)
+    this.onMouseHoverTextureEnter = this.onMouseHoverTextureEnter.bind(this)
+    this.onMouseHoverTextureLeave = this.onMouseHoverTextureLeave.bind(this)
+    this.onPlaceCharacter = this.onPlaceCharacter.bind(this)
+    this.handleHoverWhilePlacingCharacter = this.handleHoverWhilePlacingCharacter.bind(this)
+    this.getNextPlayerMove = this.getNextPlayerMove.bind(this)
   }
-  onMouseDown(x, y) {
-    this.setState({ mouseDown: true }, () => this.onMouseHoverTexture(x, y))
+  onMouseDown(e, x, y) {
+    this.setState({ mouseDown: true }, () => {
+      this.onMouseHoverTextureEnter(e, x, y)
+    })
+  }
+  onPlaceCharacter() {
+    this.setState({ inProgress: true })
+    this.props.setSelectedEditTexture(null)
   }
   onMouseUp() {
     this.setState({ mouseDown: false })
   }
-  onMouseHoverTexture(x, y) {
-    if (this.state.mouseDown) {
-      let temp = this.state.texturesMap.slice()
-      temp[y * CONFIG.GRID_WIDTH + x] = this.state.selectedTexture
-      this.setState({ texturesMap: temp })
+  handleHoverWhilePlacingCharacter(characterType, x, y) {
+    if (characterType === TEXTURES.THIEF_IDLE) this.setState({ thiefLocation: [x, y] })
+    if (characterType === TEXTURES.PLAYER_IDLE) this.setState({ playerLocation: [x, y] })
+  }
+  onMouseHoverTextureEnter(e, x, y) {
+    const { selectedEditTexture, editing } = this.props
+    const { texturesMap, mouseDown, edits } = this.state
+    const index = y * this.state.gridWidth + x
+    if (
+      selectedEditTexture === TEXTURES.PLAYER_IDLE ||
+      selectedEditTexture === TEXTURES.THIEF_IDLE
+    ) {
+      this.handleHoverWhilePlacingCharacter(selectedEditTexture, x, y)
+    } else if (editing) {
+      if (e.target !== null) {
+        e.target.parentElement.style.border = CONFIG.EDITING_BORDER
+      }
+
+      if (texturesMap[index] !== selectedEditTexture) {
+        if (mouseDown) {
+          let newTexturesMap = texturesMap.slice()
+          newTexturesMap[index] = selectedEditTexture
+          this.setState({
+            texturesMap: newTexturesMap,
+            mouseOverX: x,
+            mouseOverY: y,
+            edits: [...edits, { texture: texturesMap[index], x, y }]
+          })
+        } else {
+          this.setState({ mouseOverX: x, mouseOverY: y })
+        }
+      }
+    }
+  }
+  onMouseHoverTextureLeave(e) {
+    if (this.props.editing) {
+      this.setState({ mouseOverX: null, mouseOverY: null })
+      e.target.parentElement.style.border = "0"
     }
   }
   componentWillUpdate(nextProps) {
-    let gridWidth = Math.floor(
-      this.container.offsetWidth / nextProps.textureSize
-    )
-    let gridHeight = Math.floor(
-      this.container.offsetHeight / nextProps.textureSize
-    )
-    let xOffset = (this.container.offsetWidth % nextProps.textureSize) / 2
-    let yOffset = (this.container.offsetHeight % nextProps.textureSize) / 2
-
-    return {
+    if (nextProps.textureSize !== this.props.textureSize) {
+      this.createGridWithTextureSize(nextProps.textureSize)
+    }
+  }
+  createGridWithTextureSize(textureSize) {
+    let gridWidth = Math.floor(this.container.offsetWidth / textureSize)
+    let gridHeight = Math.floor(this.container.offsetHeight / textureSize)
+    let xOffset = (this.container.offsetWidth % textureSize) / 2
+    let yOffset = (this.container.offsetHeight % textureSize) / 2
+    this.setState({
       texturesMap: new Array(gridWidth * gridHeight).fill(TEXTURES.OBSIDIAN),
       gridWidth,
       gridHeight,
       xOffset,
       yOffset
+    })
+  }
+  generateNewMove() {
+    let total = 0
+    for (let i = 0; i < 1000; i++) {
+      for (let x = 0; x < 1000; x++) {
+        total++
+      }
+    }
+  }
+  getNextPlayerMove() {
+    if (this.props.inProgress) {
+      if (this.state.playerMoves.length === 0) {
+        this.generateNewMove()
+      }
+    }
+    this.setState({ test: !this.state.test })
+    return this.state.test ? [0, 1] : [0, -1]
+  }
+  undoEdit() {
+    if (this.state.edits.length > 0) {
+      let editsCopy = this.state.edits.slice()
+      let editToUndo = editsCopy.pop()
+      let texturesMapCopy = this.state.texturesMap.slice()
+      texturesMapCopy[editToUndo.y * this.state.gridWidth + editToUndo.x] = editToUndo.texture
+      this.setState({ texturesMap: texturesMapCopy, edits: editsCopy })
     }
   }
   componentDidMount() {
-    this.forceUpdate()
+    this.createGridWithTextureSize(this.props.textureSize)
+    this.props.onRef(this)
+    window.addEventListener("resize", e => this.createGridWithTextureSize(this.props.textureSize))
   }
   render() {
-    let gridWidth = 0
-    let gridHeight = 0
-    let texturesToRender = []
-    let xOffset = 0
-    let yOffset = 0
-    if (this.container !== undefined) {
-      gridWidth = Math.floor(
-        this.container.offsetWidth / this.props.textureSize
-      )
-      gridHeight = Math.floor(
-        this.container.offsetHeight / this.props.textureSize
-      )
-      xOffset = (this.container.offsetWidth % this.props.textureSize) / 2
-      yOffset = (this.container.offsetHeight % this.props.textureSize) / 2
-      texturesToRender = new Array(gridWidth * gridHeight).fill(
-        TEXTURES.PLAYER_RUNNING
-      )
-    }
-    console.log(texturesToRender)
+    console.log("Grid rendering")
+    const {
+      gridWidth,
+      gridHeight,
+      xOffset,
+      yOffset,
+      texturesMap,
+      mouseOverX,
+      mouseOverY,
+      playerLocation
+    } = this.state
+    const { textureSize, editing, selectedEditTexture } = this.props
     return (
-      <div
-        style={{ flex: "1", position: "relative" }}
-        ref={el => (this.container = el)}
-      >
-        {texturesToRender.map((texture, index) => {
+      <Container ref={el => (this.container = el)}>
+        {texturesMap.map((texture, index) => {
           const x = index % gridWidth
           const y = Math.floor(index / gridWidth)
           return (
@@ -82,75 +160,33 @@ export class Grid extends Component {
               x={x}
               y={y}
               key={index}
-              onMouseHoverTexture={() => this.onMouseHoverTexture(x, y)}
-              textureSize={this.props.textureSize}
-              onMouseDown={() => this.onMouseDown(x, y)}
+              onMouseHoverTextureEnter={e => this.onMouseHoverTextureEnter(e, x, y)}
+              onMouseHoverTextureLeave={e => this.onMouseHoverTextureLeave(e)}
+              textureSize={textureSize}
+              onMouseDown={e => this.onMouseDown(e, x, y)}
               onMouseUp={this.onMouseUp}
               xOffset={xOffset}
               yOffset={yOffset}
-              texture={texture}
+              texture={
+                editing && mouseOverX === x && mouseOverY === y ? selectedEditTexture : texture
+              }
             ></Texture>
           )
         })}
-      </div>
+        <Character
+          xOffset={xOffset}
+          yOffset={yOffset}
+          onPlaceCharacter={this.onPlaceCharacter}
+          characterLocation={[4, 1]}
+          textureSize={textureSize}
+          movementSpeed={100}
+          inProgress={this.props.inProgress}
+          getNextMove={this.getNextPlayerMove}
+          type={"player"}
+        ></Character>
+      </Container>
     )
   }
 }
 
 export default Grid
-
-// export default function Grid() {
-//   const [selectedTexture, setSelectedTexture] = useState(TEXTURES.LAVA)
-//   const [mouseDown, setMouseDown] = useState(false)
-//   const [texturesMap, setTexturesMap] = useState(
-//     new Array(CONFIG.GRID_WIDTH * CONFIG.GRID_HEIGHT).fill(TEXTURES.OBSIDIAN)
-//   )
-
-//   const onMouseDown = () => {
-//     console.log("down")
-//     setMouseDown(() => true)
-//   }
-//   const onMouseUp = () => {
-//     console.log("up")
-
-//     setMouseDown(() => false)
-//   }
-//   const onMouseHoverTexture = (x, y) => {
-//     console.log(mouseDown)
-//     if (mouseDown) {
-//       setTexturesMap(prev => {
-//         let temp = prev.slice()
-//         temp[y * CONFIG.GRID_WIDTH + x] = selectedTexture
-//         return temp
-//       })
-//     }
-//   }
-//   const getTextureImage = texture => {
-//     switch (texture) {
-//       case TEXTURES.OBSIDIAN:
-//         return "obsidian.png"
-//       case TEXTURES.LAVA:
-//         return "lava.jpg"
-//     }
-//   }
-
-//   return (
-//     <div>
-//       {texturesMap.map((texture, index) => {
-//         const x = index % CONFIG.GRID_WIDTH
-//         const y = Math.floor(index / CONFIG.GRID_WIDTH)
-//         return (
-//           <Texture
-//             x={x}
-//             y={y}
-//             key={index}
-//             onMouseHoverTexture={() => onMouseHoverTexture(x, y)}
-//             onMouseDown={onMouseDown}
-//             onMouseUp={onMouseUp}
-//             src={getTextureImage(texture)}
-//           ></Texture>
-//         )
-//       })}
-//     </div>
-//   )
-// }

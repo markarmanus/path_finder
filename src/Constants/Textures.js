@@ -4,7 +4,11 @@ export const TEXTURES = {
   PLAYER_RUNNING: 3,
   PLAYER_IDLE: 4,
   PLAYER_UP: 5,
-  PLAYER_DOWN: 6
+  PLAYER_DOWN: 6,
+  THIEF_IDLE: 7,
+  THIEF_UP: 8,
+  THIEF_DOWN: 9,
+  THIEF_RUNNING: 10
 }
 export const TEXTURE_DATA = {
   1: {
@@ -21,10 +25,10 @@ export const TEXTURE_DATA = {
     spriteWidth: "100px",
     spriteHeight: "100px",
     numberOfSprites: 1,
-    src: "lava.png"
+    src: "lava.jpg"
   },
   3: {
-    animationSpeed: "0.3s",
+    animationSpeed: "0.01s",
     animated: true,
     spriteWidth: "32px",
     spriteHeight: "32px",
@@ -49,10 +53,42 @@ export const TEXTURE_DATA = {
   },
   6: {
     animationSpeed: "0.5s",
-    animated: false,
+    animated: true,
     spriteWidth: "32px",
     spriteHeight: "32px",
     numberOfSprites: 4,
     src: "Character_Down.png"
+  },
+  7: {
+    animationSpeed: null,
+    animated: false,
+    spriteWidth: "32px",
+    spriteHeight: "32px",
+    numberOfSprites: 1,
+    src: "Character_Idle.png"
+  },
+  8: {
+    animationSpeed: "0.5s",
+    animated: true,
+    spriteWidth: "32px",
+    spriteHeight: "32px",
+    numberOfSprites: 4,
+    src: "Character_Up.png"
+  },
+  9: {
+    animationSpeed: "0.5s",
+    animated: true,
+    spriteWidth: "32px",
+    spriteHeight: "32px",
+    numberOfSprites: 4,
+    src: "Character_Down.png"
+  },
+  10: {
+    animationSpeed: "0.01s",
+    animated: true,
+    spriteWidth: "32px",
+    spriteHeight: "32px",
+    numberOfSprites: 4,
+    src: "Character_Right.png"
   }
 }

@@ -4,8 +4,6 @@ import { Typography, Button } from "antd"
 
 const Container = styled.div`
   width: 100%;
-  //   position: fixed;
-  //   bottom: 0;
   height: 150px;
   background-color: #1b2a41;
   justify-content: center;
@@ -30,7 +28,7 @@ export default function Footer() {
       <CenterContainer>
         <StyledText>Made By Mark Armanious © 2019</StyledText>
         <StyledButton
-          href={"https://github.com/markarmanus/Sorting-Visualizer"}
+          href={"https://github.com/markarmanus/path_finder"}
           target={"_blank"}
           shape={"circle"}
           ghost={true}
