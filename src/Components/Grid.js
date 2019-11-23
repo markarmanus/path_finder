@@ -4,6 +4,7 @@ import Texture from "./Texture"
 import { TEXTURES } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
 import Character from "./Character"
+import getNextAction from "../AStar.js"
 
 const Container = styled.div`
   flex: 1;
@@ -20,13 +21,13 @@ export class Grid extends Component {
       gridHeight: 0,
       xOffset: 0,
       yOffset: 0,
-      playerLocation: null,
-      thiefLocation: null,
+      initialPlayerLocation: null,
+      currentPlayerLocation: null,
+      initialThiefLocation: null,
+      currentThiefLocation: null,
       mouseOverX: null,
-      test: true,
       mouseOverY: null,
-      mouseDown: false,
-      playerMoves: [[0, 1]]
+      mouseDown: false
     }
     this.onMouseDown = this.onMouseDown.bind(this)
     this.onMouseUp = this.onMouseUp.bind(this)
@@ -34,26 +35,46 @@ export class Grid extends Component {
     this.onMouseHoverTextureLeave = this.onMouseHoverTextureLeave.bind(this)
     this.onPlaceCharacter = this.onPlaceCharacter.bind(this)
     this.handleHoverWhilePlacingCharacter = this.handleHoverWhilePlacingCharacter.bind(this)
-    this.getNextPlayerMove = this.getNextPlayerMove.bind(this)
+    this.getNextCharacterAction = this.getNextCharacterAction.bind(this)
   }
   onMouseDown(e, x, y) {
     this.setState({ mouseDown: true }, () => {
       this.onMouseHoverTextureEnter(e, x, y)
     })
   }
-  onPlaceCharacter() {
-    this.setState({ inProgress: true })
+  onPlaceCharacter(type) {
     this.props.setSelectedEditTexture(null)
   }
   onMouseUp() {
     this.setState({ mouseDown: false })
   }
   handleHoverWhilePlacingCharacter(characterType, x, y) {
-    if (characterType === TEXTURES.THIEF_IDLE) this.setState({ thiefLocation: [x, y] })
-    if (characterType === TEXTURES.PLAYER_IDLE) this.setState({ playerLocation: [x, y] })
+    if (characterType === TEXTURES.THIEF_IDLE) {
+      this.resetCharactersLocation(CONFIG.THIEF)
+      this.setState({ initialThiefLocation: [x, y], currentThiefLocation: [x, y] })
+    }
+    if (characterType === TEXTURES.PLAYER_IDLE) {
+      this.resetCharactersLocation(CONFIG.PLAYER)
+      this.setState({ initialPlayerLocation: [x, y], currentPlayerLocation: [x, y] })
+    }
+  }
+  resetCharactersLocation(character) {
+    if (character === CONFIG.PLAYER) {
+      let player = document.getElementById(CONFIG.PLAYER)
+      player.style.left = 0
+      player.style.top = 0
+    } else {
+      let thief = document.getElementById(CONFIG.THIEF)
+      thief.style.left = 0
+      thief.style.top = 0
+    }
+  }
+  handleFollowCursor(x, y) {
+    this.resetCharactersLocation(CONFIG.THIEF)
+    this.setState({ initialThiefLocation: [x, y], currentThiefLocation: [x, y] })
   }
   onMouseHoverTextureEnter(e, x, y) {
-    const { selectedEditTexture, editing } = this.props
+    const { selectedEditTexture, editing, followCursor } = this.props
     const { texturesMap, mouseDown, edits } = this.state
     const index = y * this.state.gridWidth + x
     if (
@@ -80,6 +101,8 @@ export class Grid extends Component {
           this.setState({ mouseOverX: x, mouseOverY: y })
         }
       }
+    } else if (followCursor) {
+      this.handleFollowCursor(x, y)
     }
   }
   onMouseHoverTextureLeave(e) {
@@ -90,10 +113,11 @@ export class Grid extends Component {
   }
   componentWillUpdate(nextProps) {
     if (nextProps.textureSize !== this.props.textureSize) {
-      this.createGridWithTextureSize(nextProps.textureSize)
+      this.initializeGridWithTextureSize(nextProps.textureSize)
     }
   }
-  createGridWithTextureSize(textureSize) {
+
+  initializeGridWithTextureSize(textureSize) {
     let gridWidth = Math.floor(this.container.offsetWidth / textureSize)
     let gridHeight = Math.floor(this.container.offsetHeight / textureSize)
     let xOffset = (this.container.offsetWidth % textureSize) / 2
@@ -103,25 +127,35 @@ export class Grid extends Component {
       gridWidth,
       gridHeight,
       xOffset,
-      yOffset
+      yOffset,
+      initialPlayerLocation: [0, 0],
+      initialThiefLocation: [gridWidth - 1, 0],
+      currentPlayerLocation: [0, 0],
+      currentThiefLocation: [gridWidth - 1, 0],
+      edits: []
     })
+    this.props.envIsReady()
   }
-  generateNewMove() {
-    let total = 0
-    for (let i = 0; i < 1000; i++) {
-      for (let x = 0; x < 1000; x++) {
-        total++
+
+  getNextCharacterAction(type) {
+    let action = getNextAction(this.state, type)
+    if (action[0] !== 0 || action[1] !== 0) {
+      if (type === CONFIG.PLAYER) {
+        let newPosition = [
+          this.state.currentPlayerLocation[0] + action[0],
+          this.state.currentPlayerLocation[1] + action[1]
+        ]
+        this.setState({ currentPlayerLocation: newPosition })
+      } else {
+        let newPosition = [
+          this.state.currentThiefLocation[0] + action[0],
+          this.state.currentThiefLocation[1] + action[1]
+        ]
+        this.setState({ currentThiefLocation: newPosition })
       }
     }
-  }
-  getNextPlayerMove() {
-    if (this.props.inProgress) {
-      if (this.state.playerMoves.length === 0) {
-        this.generateNewMove()
-      }
-    }
-    this.setState({ test: !this.state.test })
-    return this.state.test ? [0, 1] : [0, -1]
+
+    return action
   }
   undoEdit() {
     if (this.state.edits.length > 0) {
@@ -133,12 +167,21 @@ export class Grid extends Component {
     }
   }
   componentDidMount() {
-    this.createGridWithTextureSize(this.props.textureSize)
+    this.initializeGridWithTextureSize(this.props.textureSize)
     this.props.onRef(this)
-    window.addEventListener("resize", e => this.createGridWithTextureSize(this.props.textureSize))
+    window.addEventListener("resize", e =>
+      this.initializeGridWithTextureSize(this.props.textureSize)
+    )
+  }
+  onClickRestart() {
+    this.player.onClickRestart()
+    this.thief.onClickRestart()
+    this.setState({
+      currentPlayerLocation: this.state.initialPlayerLocation,
+      currentThiefLocation: this.state.initialThiefLocation
+    })
   }
   render() {
-    console.log("Grid rendering")
     const {
       gridWidth,
       gridHeight,
@@ -147,9 +190,10 @@ export class Grid extends Component {
       texturesMap,
       mouseOverX,
       mouseOverY,
-      playerLocation
+      initialPlayerLocation,
+      initialThiefLocation
     } = this.state
-    const { textureSize, editing, selectedEditTexture } = this.props
+    const { textureSize, editing, selectedEditTexture, playerSpeed, thiefSpeed } = this.props
     return (
       <Container ref={el => (this.container = el)}>
         {texturesMap.map((texture, index) => {
@@ -176,13 +220,30 @@ export class Grid extends Component {
         <Character
           xOffset={xOffset}
           yOffset={yOffset}
+          onRef={ref => (this.player = ref)}
           onPlaceCharacter={this.onPlaceCharacter}
-          characterLocation={[4, 1]}
+          initialCharacterLocation={initialPlayerLocation}
           textureSize={textureSize}
-          movementSpeed={100}
+          movementSpeed={playerSpeed}
           inProgress={this.props.inProgress}
-          getNextMove={this.getNextPlayerMove}
-          type={"player"}
+          paused={this.props.paused}
+          getNextAction={this.getNextCharacterAction}
+          renderOnScreen={true}
+          type={CONFIG.PLAYER}
+        ></Character>
+        <Character
+          xOffset={xOffset}
+          yOffset={yOffset}
+          onRef={ref => (this.thief = ref)}
+          onPlaceCharacter={this.onPlaceCharacter}
+          initialCharacterLocation={initialThiefLocation}
+          textureSize={textureSize}
+          movementSpeed={thiefSpeed}
+          inProgress={this.props.inProgress}
+          paused={this.props.paused}
+          getNextAction={this.getNextCharacterAction}
+          renderOnScreen={!this.props.followCursor}
+          type={CONFIG.THIEF}
         ></Character>
       </Container>
     )

@@ -90,7 +90,7 @@ export default class NavBar extends Component {
           >
             <Select.Option value={TEXTURES.OBSIDIAN}>Draw Floor</Select.Option>
             <Select.Option value={TEXTURES.LAVA}>Draw Lava</Select.Option>
-            <Select.Option value={TEXTURES.PLAYER_RUNNING}>Draw Walls</Select.Option>
+            <Select.Option value={TEXTURES.WALL}>Draw Walls</Select.Option>
           </StyledSelector>
           <DoneButton
             visible={this.props.editing}
@@ -103,23 +103,66 @@ export default class NavBar extends Component {
         <Center>
           <SliderContainer>
             <Label>Player Speed</Label>
-            <StyledSlider tooltipPlacement={"right"} />
+            <StyledSlider
+              onChange={speed => this.props.onChangeCharacterSpeed(CONFIG.PLAYER, speed)}
+              defaultValue={this.props.playerSpeed}
+              min={1}
+              max={4}
+              step={1}
+              tooltipPlacement={"right"}
+            />
+            <Label>Thief Speed</Label>
+            <StyledSlider
+              onChange={speed => this.props.onChangeCharacterSpeed(CONFIG.THIEF, speed)}
+              defaultValue={this.props.thiefSpeed}
+              min={1}
+              max={4}
+              step={1}
+              tooltipPlacement={"right"}
+            />
           </SliderContainer>
-          <StyledButton
-            onClick={() => this.props.onSelectEditTexture(TEXTURES.PLAYER_IDLE)}
-            type="secondary"
-          >
-            Place Officer
-          </StyledButton>
-          <StyledButton onClick={() => this.props.onClickStart()} type="primary">
-            Start
-          </StyledButton>
-          <StyledButton
-            onClick={() => this.props.onSelectEditTexture(TEXTURES.THIEF_IDLE)}
-            type="secondary"
-          >
-            Place Thief
-          </StyledButton>
+          {this.props.inProgress ? null : (
+            <StyledButton
+              onClick={() => this.props.onSelectEditTexture(TEXTURES.PLAYER_IDLE)}
+              type="secondary"
+            >
+              Place Officer
+            </StyledButton>
+          )}
+
+          {this.props.inProgress ? (
+            <CenterFlexBox style={{ display: "contents" }}>
+              <StyledButton onClick={() => this.props.onClickRestart()} type="primary">
+                Stop
+              </StyledButton>
+              {this.props.paused ? (
+                <StyledButton type="secondary" onClick={() => this.props.onClickResume()}>
+                  Resume
+                </StyledButton>
+              ) : (
+                <StyledButton type="secondary" onClick={() => this.props.onClickPause()}>
+                  Pause
+                </StyledButton>
+              )}
+            </CenterFlexBox>
+          ) : (
+            <StyledButton
+              disabled={!this.props.ready}
+              onClick={() => this.props.onClickStart()}
+              type="primary"
+            >
+              Start
+            </StyledButton>
+          )}
+          {this.props.inProgress ? null : (
+            <StyledButton
+              onClick={() => this.props.onSelectEditTexture(TEXTURES.THIEF_IDLE)}
+              type="secondary"
+            >
+              Place Thief
+            </StyledButton>
+          )}
+
           <SliderContainer>
             <Label>Map Scale</Label>
             <StyledSlider
@@ -139,6 +182,15 @@ export default class NavBar extends Component {
           >
             Undo
           </StyledButton>
+          {!this.props.followCursor ? (
+            <StyledButton
+              style={{ width: "50%" }}
+              onClick={() => this.props.enableFollowCursor()}
+              type="secondary"
+            >
+              Follow Cursor Mode
+            </StyledButton>
+          ) : null}
         </Right>
       </Container>
     )

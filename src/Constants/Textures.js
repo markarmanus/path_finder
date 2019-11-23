@@ -8,7 +8,8 @@ export const TEXTURES = {
   THIEF_IDLE: 7,
   THIEF_UP: 8,
   THIEF_DOWN: 9,
-  THIEF_RUNNING: 10
+  THIEF_RUNNING: 10,
+  WALL: 11
 }
 export const TEXTURE_DATA = {
   1: {
@@ -28,7 +29,7 @@ export const TEXTURE_DATA = {
     src: "lava.jpg"
   },
   3: {
-    animationSpeed: "0.01s",
+    animationSpeed: "0.3s",
     animated: true,
     spriteWidth: "32px",
     spriteHeight: "32px",
@@ -84,11 +85,19 @@ export const TEXTURE_DATA = {
     src: "Character_Down.png"
   },
   10: {
-    animationSpeed: "0.01s",
+    animationSpeed: "0.3s",
     animated: true,
     spriteWidth: "32px",
     spriteHeight: "32px",
     numberOfSprites: 4,
     src: "Character_Right.png"
+  },
+  11: {
+    animationSpeed: null,
+    animated: false,
+    spriteWidth: "10px",
+    spriteHeight: "10px",
+    numberOfSprites: 1,
+    src: "wall.png"
   }
 }

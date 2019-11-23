@@ -11,34 +11,42 @@ export class Character extends Component {
     super(props)
     this.state = {
       walking: false,
-      currentTexture: TEXTURES[props.type.toUpperCase() + "_IDLE"]
+      currentTexture: TEXTURES[props.type.toUpperCase() + "_IDLE"],
+      currentMovementSpeed: this.props.movementSpeed
     }
-    this.move = this.move.bind(this)
+    this.takeAction = this.takeAction.bind(this)
     this.setCorrectTexture = this.setCorrectTexture.bind(this)
     this.setCorrectDirection = this.setCorrectDirection.bind(this)
-    this.takeNextMove = this.takeNextMove.bind(this)
+    this.doNextAction = this.doNextAction.bind(this)
   }
 
-  takeNextMove() {
-    let move = this.props.getNextMove()
-    console.log(move)
-    if (move !== undefined) {
+  doNextAction() {
+    let action = this.props.getNextAction(this.props.type)
+    let typeUpperCase = this.props.type.toUpperCase()
+    if (action[0] !== 0 || action[1] !== 0) {
       this.setState({ walking: true })
-      this.move(move)
+      this.takeAction(action)
+    } else if (this.state.currentTexture !== TEXTURES[typeUpperCase + "_IDLE"]) {
+      this.setState({ currentTexture: TEXTURES[typeUpperCase + "_IDLE"] })
     }
   }
-
+  componentDidMount() {
+    this.props.onRef(this)
+  }
+  onClickRestart() {
+    let character = document.getElementById(this.props.type)
+    character.style.left = 0
+    character.style.top = 0
+    this.setState({ currentTexture: TEXTURES[this.props.type.toUpperCase() + "_IDLE"] })
+  }
   componentDidUpdate() {
-    console.log(this.state.walking)
-    if (!this.state.walking && this.props.inProgress) {
-      let typeUpperCase = this.props.type.toUpperCase()
-      this.takeNextMove()
-      if (
-        this.state.currentTexture !== TEXTURES[typeUpperCase + "_IDLE"] &&
-        !this.props.inProgress
-      ) {
-        this.setState({ currentTexture: TEXTURES[typeUpperCase + "_IDLE"] })
-      }
+    if (
+      !this.state.walking &&
+      this.props.inProgress &&
+      !this.props.paused &&
+      this.props.renderOnScreen
+    ) {
+      this.doNextAction()
     }
   }
   setCorrectTexture(direction) {
@@ -60,41 +68,51 @@ export class Character extends Component {
       }
     }
   }
-  move(direction) {
+  takeAction(direction) {
     this.setCorrectTexture(direction)
     let character = document.getElementById(this.props.type)
     this.setCorrectDirection(character.firstChild, direction)
-    let top = character.offsetTop
-    let left = character.offsetLeft
-    var id = setInterval(frame.bind(this), 100 - this.props.movementSpeed)
+    let stepsCount = Math.floor(this.props.textureSize / this.props.movementSpeed)
+    let remainder = this.props.textureSize % this.props.movementSpeed
+
+    let counter = 0
+    this.setState({ currentMovementSpeed: this.props.movementSpeed })
+    var id = setInterval(frame.bind(this), 0)
     function frame() {
-      if (
-        Math.abs(left - character.offsetLeft) > this.props.textureSize ||
-        Math.abs(top - character.offsetTop) > this.props.textureSize
-      ) {
+      if (counter === stepsCount || !this.props.inProgress) {
         clearInterval(id)
+        character.style.left = character.offsetLeft + direction[0] * remainder + "px"
+        character.style.top = character.offsetTop + direction[1] * remainder + "px"
         this.setState({ walking: false })
       } else {
-        character.style.left = character.offsetLeft + direction[0] + "px"
-        character.style.top = character.offsetTop + direction[1] + "px"
+        counter++
+        character.style.left =
+          character.offsetLeft + direction[0] * this.state.currentMovementSpeed + "px"
+        character.style.top =
+          character.offsetTop + direction[1] * this.state.currentMovementSpeed + "px"
       }
     }
   }
   render() {
-    const { characterLocation, type, textureSize, xOffset, yOffset, onPlaceCharacter } = this.props
+    const {
+      initialCharacterLocation,
+      type,
+      textureSize,
+      xOffset,
+      yOffset,
+      onPlaceCharacter,
+      renderOnScreen
+    } = this.props
     return (
       <CharacterSprite id={type}>
-        {characterLocation !== null ? (
+        {initialCharacterLocation !== null && renderOnScreen ? (
           <Texture
-            x={characterLocation[0]}
-            y={characterLocation[1]}
+            x={initialCharacterLocation[0]}
+            y={initialCharacterLocation[1]}
             textureSize={textureSize}
             xOffset={xOffset}
             yOffset={yOffset}
-            onMouseDown={() => {
-              this.takeNextMove()
-              onPlaceCharacter()
-            }}
+            onMouseDown={() => onPlaceCharacter(type)}
             texture={this.state.currentTexture}
           ></Texture>
         ) : null}
