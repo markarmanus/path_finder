@@ -4,6 +4,7 @@ import { Slider, Button, Typography, Select, Icon } from "antd"
 import "antd/dist/antd.css"
 import { TEXTURES } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
+import { CONSTANTS } from "../Constants/Constants"
 
 const Container = styled.div`
   vertical-align: middle;
@@ -91,6 +92,7 @@ export default class NavBar extends Component {
             <Select.Option value={TEXTURES.OBSIDIAN}>Draw Floor</Select.Option>
             <Select.Option value={TEXTURES.LAVA}>Draw Lava</Select.Option>
             <Select.Option value={TEXTURES.WALL}>Draw Walls</Select.Option>
+            <Select.Option value={TEXTURES.HEALTH_PACK}>Add/Remove Health Packs</Select.Option>
           </StyledSelector>
           <DoneButton
             visible={this.props.editing}
@@ -104,7 +106,7 @@ export default class NavBar extends Component {
           <SliderContainer>
             <Label>Player Speed</Label>
             <StyledSlider
-              onChange={speed => this.props.onChangeCharacterSpeed(CONFIG.PLAYER, speed)}
+              onChange={speed => this.props.onChangeCharacterSpeed(CONSTANTS.PLAYER, speed)}
               defaultValue={this.props.playerSpeed}
               min={1}
               max={4}
@@ -113,7 +115,7 @@ export default class NavBar extends Component {
             />
             <Label>Thief Speed</Label>
             <StyledSlider
-              onChange={speed => this.props.onChangeCharacterSpeed(CONFIG.THIEF, speed)}
+              onChange={speed => this.props.onChangeCharacterSpeed(CONSTANTS.THIEF, speed)}
               defaultValue={this.props.thiefSpeed}
               min={1}
               max={4}

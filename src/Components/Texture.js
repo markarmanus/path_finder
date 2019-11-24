@@ -21,14 +21,14 @@ const Sprite = styled.div`
   height: 100%;
   background-image: url(${props => props.textureData.src});
   background-size: 100%, 100%;
-  background-repeat: ${props =>
-    props.textureData.animated ? "no-repeat" : "unset"};
+  background-repeat: ${props => (props.textureData.animated ? "no-repeat" : "unset")};
   animation: ${props => getAnimation(props.textureData.numberOfSprites)}
     ${props => props.textureData.animationSpeed}
     steps(${props => props.textureData.numberOfSprites - 1})
     ${props => (props.textureData.animated ? "infinite" : 0)};
   position: absolute;
   user-select: none;
+
   left: 0;
   top: 0;
 `
@@ -60,6 +60,7 @@ export class Texture extends Component {
       onMouseHoverTextureEnter,
       onMouseHoverTextureLeave,
       texture,
+      zIndex,
       textureSize
     } = this.props
     const textureData = TEXTURE_DATA[texture]
@@ -72,19 +73,22 @@ export class Texture extends Component {
           width: textureSize + "px",
           top: yOffset ? y * textureSize + yOffset : y * textureSize,
           left: xOffset ? x * textureSize + xOffset : x * textureSize,
+          zIndex: zIndex,
           overflow: "hidden",
           userSelect: "none"
         }}
       >
-        <Sprite
-          textureData={textureData}
-          onMouseDown={onMouseDown}
-          onMouseUp={onMouseUp}
-          onMouseEnter={onMouseHoverTextureEnter}
-          onMouseLeave={onMouseHoverTextureLeave}
-          onTouchEnd={onMouseUp}
-          onTouchStart={onMouseDown}
-        ></Sprite>
+        {texture === null ? null : (
+          <Sprite
+            textureData={textureData}
+            onMouseDown={onMouseDown}
+            onMouseUp={onMouseUp}
+            onMouseEnter={onMouseHoverTextureEnter}
+            onMouseLeave={onMouseHoverTextureLeave}
+            onTouchEnd={onMouseUp}
+            onTouchStart={onMouseDown}
+          ></Sprite>
+        )}
       </div>
     )
   }

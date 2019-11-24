@@ -4,7 +4,5 @@ export const CONFIG = {
   DEFAULT_TEXTURE_SIZE: 200,
   MIN_TEXTURE_SIZE: 50,
   MAX_TEXTURE_SIZE: 150,
-  EDITING_BORDER: "5px solid purple",
-  PLAYER: "player",
-  THIEF: "thief"
+  EDITING_BORDER: "5px solid purple"
 }

@@ -5,6 +5,7 @@ import Footer from "./Footer"
 import { CONFIG } from "../Constants/Config"
 import styled from "styled-components"
 import { TEXTURES } from "../Constants/Textures"
+import { CONSTANTS } from "../Constants/Constants"
 
 const MainContainer = styled.div`
   display: flex;

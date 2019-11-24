@@ -5,6 +5,7 @@ import { TEXTURES } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
 import Character from "./Character"
 import getNextAction from "../AStar.js"
+import { CONSTANTS } from "../Constants/Constants"
 
 const Container = styled.div`
   flex: 1;
@@ -16,6 +17,7 @@ export class Grid extends Component {
     super(props)
     this.state = {
       texturesMap: [],
+      overLayMap: [],
       edits: [],
       gridWidth: 0,
       gridHeight: 0,
@@ -50,32 +52,32 @@ export class Grid extends Component {
   }
   handleHoverWhilePlacingCharacter(characterType, x, y) {
     if (characterType === TEXTURES.THIEF_IDLE) {
-      this.resetCharactersLocation(CONFIG.THIEF)
+      this.resetCharactersLocation(CONSTANTS.THIEF)
       this.setState({ initialThiefLocation: [x, y], currentThiefLocation: [x, y] })
     }
     if (characterType === TEXTURES.PLAYER_IDLE) {
-      this.resetCharactersLocation(CONFIG.PLAYER)
+      this.resetCharactersLocation(CONSTANTS.PLAYER)
       this.setState({ initialPlayerLocation: [x, y], currentPlayerLocation: [x, y] })
     }
   }
   resetCharactersLocation(character) {
-    if (character === CONFIG.PLAYER) {
-      let player = document.getElementById(CONFIG.PLAYER)
+    if (character === CONSTANTS.PLAYER) {
+      let player = document.getElementById(CONSTANTS.PLAYER)
       player.style.left = 0
       player.style.top = 0
     } else {
-      let thief = document.getElementById(CONFIG.THIEF)
+      let thief = document.getElementById(CONSTANTS.THIEF)
       thief.style.left = 0
       thief.style.top = 0
     }
   }
   handleFollowCursor(x, y) {
-    this.resetCharactersLocation(CONFIG.THIEF)
+    this.resetCharactersLocation(CONSTANTS.THIEF)
     this.setState({ initialThiefLocation: [x, y], currentThiefLocation: [x, y] })
   }
   onMouseHoverTextureEnter(e, x, y) {
     const { selectedEditTexture, editing, followCursor } = this.props
-    const { texturesMap, mouseDown, edits } = this.state
+    const { texturesMap, mouseDown, edits, overLayMap } = this.state
     const index = y * this.state.gridWidth + x
     if (
       selectedEditTexture === TEXTURES.PLAYER_IDLE ||
@@ -86,8 +88,22 @@ export class Grid extends Component {
       if (e.target !== null) {
         e.target.parentElement.style.border = CONFIG.EDITING_BORDER
       }
-
-      if (texturesMap[index] !== selectedEditTexture) {
+      if (selectedEditTexture === TEXTURES.HEALTH_PACK) {
+        if (mouseDown) {
+          let newOverLayMap = overLayMap.slice()
+          newOverLayMap[index] =
+            overLayMap[index] === TEXTURES.HEALTH_PACK ? TEXTURES.TRANSPARENT : selectedEditTexture
+          this.setState({
+            overLayMap: newOverLayMap,
+            mouseOverX: x,
+            mouseOverY: y,
+            mouseDown: false,
+            edits: [...edits, { type: CONSTANTS.OVERLAY, texture: overLayMap[index], x, y }]
+          })
+        } else {
+          this.setState({ mouseOverX: x, mouseOverY: y })
+        }
+      } else if (texturesMap[index] !== selectedEditTexture) {
         if (mouseDown) {
           let newTexturesMap = texturesMap.slice()
           newTexturesMap[index] = selectedEditTexture
@@ -95,7 +111,7 @@ export class Grid extends Component {
             texturesMap: newTexturesMap,
             mouseOverX: x,
             mouseOverY: y,
-            edits: [...edits, { texture: texturesMap[index], x, y }]
+            edits: [...edits, { type: CONSTANTS.TEXTURE, texture: texturesMap[index], x, y }]
           })
         } else {
           this.setState({ mouseOverX: x, mouseOverY: y })
@@ -124,6 +140,7 @@ export class Grid extends Component {
     let yOffset = (this.container.offsetHeight % textureSize) / 2
     this.setState({
       texturesMap: new Array(gridWidth * gridHeight).fill(TEXTURES.OBSIDIAN),
+      overLayMap: new Array(gridWidth * gridHeight).fill(TEXTURES.TRANSPARENT),
       gridWidth,
       gridHeight,
       xOffset,
@@ -140,7 +157,7 @@ export class Grid extends Component {
   getNextCharacterAction(type) {
     let action = getNextAction(this.state, type)
     if (action[0] !== 0 || action[1] !== 0) {
-      if (type === CONFIG.PLAYER) {
+      if (type === CONSTANTS.PLAYER) {
         let newPosition = [
           this.state.currentPlayerLocation[0] + action[0],
           this.state.currentPlayerLocation[1] + action[1]
@@ -161,9 +178,16 @@ export class Grid extends Component {
     if (this.state.edits.length > 0) {
       let editsCopy = this.state.edits.slice()
       let editToUndo = editsCopy.pop()
-      let texturesMapCopy = this.state.texturesMap.slice()
-      texturesMapCopy[editToUndo.y * this.state.gridWidth + editToUndo.x] = editToUndo.texture
-      this.setState({ texturesMap: texturesMapCopy, edits: editsCopy })
+      let index = editToUndo.y * this.state.gridWidth + editToUndo.x
+      if (editToUndo.type === CONSTANTS.TEXTURE) {
+        let texturesMapCopy = this.state.texturesMap.slice()
+        texturesMapCopy[index] = editToUndo.texture
+        this.setState({ texturesMap: texturesMapCopy, edits: editsCopy })
+      } else if (editToUndo.type === CONSTANTS.OVERLAY) {
+        let overLayMapCopy = this.state.overLayMap.slice()
+        overLayMapCopy[index] = editToUndo.texture
+        this.setState({ overLayMap: overLayMapCopy, edits: editsCopy })
+      }
     }
   }
   componentDidMount() {
@@ -188,6 +212,7 @@ export class Grid extends Component {
       xOffset,
       yOffset,
       texturesMap,
+      overLayMap,
       mouseOverX,
       mouseOverY,
       initialPlayerLocation,
@@ -199,22 +224,38 @@ export class Grid extends Component {
         {texturesMap.map((texture, index) => {
           const x = index % gridWidth
           const y = Math.floor(index / gridWidth)
+          let isBeingEdited = editing && mouseOverX === x && mouseOverY === y
+          let isEditingOverLay = selectedEditTexture === TEXTURES.HEALTH_PACK
+
           return (
-            <Texture
-              x={x}
-              y={y}
-              key={index}
-              onMouseHoverTextureEnter={e => this.onMouseHoverTextureEnter(e, x, y)}
-              onMouseHoverTextureLeave={e => this.onMouseHoverTextureLeave(e)}
-              textureSize={textureSize}
-              onMouseDown={e => this.onMouseDown(e, x, y)}
-              onMouseUp={this.onMouseUp}
-              xOffset={xOffset}
-              yOffset={yOffset}
-              texture={
-                editing && mouseOverX === x && mouseOverY === y ? selectedEditTexture : texture
-              }
-            ></Texture>
+            <span key={index}>
+              <Texture
+                x={x}
+                y={y}
+                key={index + "texture"}
+                textureSize={textureSize}
+                xOffset={xOffset}
+                zIndex={1}
+                yOffset={yOffset}
+                texture={isBeingEdited && !isEditingOverLay ? selectedEditTexture : texture}
+              ></Texture>
+              <Texture
+                x={x}
+                y={y}
+                key={index + "overLay"}
+                onMouseHoverTextureEnter={e => this.onMouseHoverTextureEnter(e, x, y)}
+                onMouseHoverTextureLeave={e => this.onMouseHoverTextureLeave(e)}
+                textureSize={textureSize}
+                onMouseDown={e => this.onMouseDown(e, x, y)}
+                zIndex={2}
+                onMouseUp={this.onMouseUp}
+                xOffset={xOffset}
+                yOffset={yOffset}
+                texture={
+                  isBeingEdited && isEditingOverLay ? selectedEditTexture : overLayMap[index]
+                }
+              ></Texture>
+            </span>
           )
         })}
         <Character
@@ -229,7 +270,7 @@ export class Grid extends Component {
           paused={this.props.paused}
           getNextAction={this.getNextCharacterAction}
           renderOnScreen={true}
-          type={CONFIG.PLAYER}
+          type={CONSTANTS.PLAYER}
         ></Character>
         <Character
           xOffset={xOffset}
@@ -243,7 +284,7 @@ export class Grid extends Component {
           paused={this.props.paused}
           getNextAction={this.getNextCharacterAction}
           renderOnScreen={!this.props.followCursor}
-          type={CONFIG.THIEF}
+          type={CONSTANTS.THIEF}
         ></Character>
       </Container>
     )

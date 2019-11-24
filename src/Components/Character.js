@@ -112,6 +112,7 @@ export class Character extends Component {
             textureSize={textureSize}
             xOffset={xOffset}
             yOffset={yOffset}
+            zIndex={2}
             onMouseDown={() => onPlaceCharacter(type)}
             texture={this.state.currentTexture}
           ></Texture>
