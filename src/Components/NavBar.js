@@ -104,6 +104,15 @@ export default class NavBar extends Component {
         </Left>
         <Center>
           <SliderContainer>
+            <Label>Player Max Health</Label>
+            <StyledSlider
+              onChange={value => this.props.onChangeCharacterMaxHealth(CONSTANTS.PLAYER, value)}
+              defaultValue={this.props.playerMaxHealth}
+              min={1}
+              max={5}
+              step={1}
+              tooltipPlacement={"right"}
+            />
             <Label>Player Speed</Label>
             <StyledSlider
               onChange={speed => this.props.onChangeCharacterSpeed(CONSTANTS.PLAYER, speed)}
@@ -174,15 +183,40 @@ export default class NavBar extends Component {
               defaultValue={this.props.textureSize}
               tooltipPlacement={"right"}
             />
+            <Label>Thief Max Health</Label>
+            <StyledSlider
+              onChange={value => this.props.onChangeCharacterMaxHealth(CONSTANTS.THIEF, value)}
+              defaultValue={this.props.thiefMaxHealth}
+              min={1}
+              max={5}
+              step={1}
+              tooltipPlacement={"right"}
+            />
+            <Label>Health Importance</Label>
+            <StyledSlider
+              onChange={value => this.props.onChangeHealthImportance(value)}
+              defaultValue={this.props.healthImportance}
+              min={0.01}
+              max={0.99}
+              step={0.01}
+              tooltipPlacement={"right"}
+            />
           </SliderContainer>
         </Center>
         <Right>
           <StyledButton
-            style={{ width: "50%" }}
+            style={{ width: "25%" }}
             onClick={() => this.props.onClickUndo()}
             type="secondary"
           >
             Undo
+          </StyledButton>
+          <StyledButton
+            style={{ width: "25%" }}
+            onClick={() => this.props.generateLink()}
+            type="secondary"
+          >
+            Share
           </StyledButton>
           {!this.props.followCursor ? (
             <StyledButton

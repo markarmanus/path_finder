@@ -78,17 +78,16 @@ export class Texture extends Component {
           userSelect: "none"
         }}
       >
-        {texture === null ? null : (
-          <Sprite
-            textureData={textureData}
-            onMouseDown={onMouseDown}
-            onMouseUp={onMouseUp}
-            onMouseEnter={onMouseHoverTextureEnter}
-            onMouseLeave={onMouseHoverTextureLeave}
-            onTouchEnd={onMouseUp}
-            onTouchStart={onMouseDown}
-          ></Sprite>
-        )}
+        <Sprite
+          textureData={textureData}
+          onMouseDown={onMouseDown}
+          onMouseUp={onMouseUp}
+          onMouseEnter={onMouseHoverTextureEnter}
+          onMouseLeave={onMouseHoverTextureLeave}
+          onTouchEnd={onMouseUp}
+          onTouchStart={onMouseDown}
+        ></Sprite>
+        )
       </div>
     )
   }

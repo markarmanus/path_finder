@@ -6,6 +6,7 @@ import { CONFIG } from "../Constants/Config"
 import Character from "./Character"
 import getNextAction from "../AStar.js"
 import { CONSTANTS } from "../Constants/Constants"
+import queryString from "query-string"
 
 const Container = styled.div`
   flex: 1;
@@ -27,6 +28,8 @@ export class Grid extends Component {
       currentPlayerLocation: null,
       initialThiefLocation: null,
       currentThiefLocation: null,
+      currentPlayerHealth: props.playerMaxHealth,
+      currentThiefHealth: props.thiefMaxHealth,
       mouseOverX: null,
       mouseOverY: null,
       mouseDown: false
@@ -38,6 +41,14 @@ export class Grid extends Component {
     this.onPlaceCharacter = this.onPlaceCharacter.bind(this)
     this.handleHoverWhilePlacingCharacter = this.handleHoverWhilePlacingCharacter.bind(this)
     this.getNextCharacterAction = this.getNextCharacterAction.bind(this)
+    this.setCharacterCurrentHealth = this.setCharacterCurrentHealth.bind(this)
+    this.onCharacterFinishMove = this.onCharacterFinishMove.bind(this)
+    this.updateURL = this.updateURL.bind(this)
+  }
+
+  setCharacterCurrentHealth(character, value) {
+    let capitalized = character.charAt(0).toUpperCase() + character.slice(1)
+    this.setState({ ["current" + capitalized + "Health"]: value })
   }
   onMouseDown(e, x, y) {
     this.setState({ mouseDown: true }, () => {
@@ -75,6 +86,31 @@ export class Grid extends Component {
     this.resetCharactersLocation(CONSTANTS.THIEF)
     this.setState({ initialThiefLocation: [x, y], currentThiefLocation: [x, y] })
   }
+
+  updateURL() {
+    let newURLObject = {
+      playerSpeed: this.props.playerSpeed,
+      playerMaxHealth: this.props.playerMaxHealth,
+      thiefMaxHealth: this.props.thiefMaxHealth,
+      initialTexturesMap: this.state.texturesMap,
+      healthImportance: this.props.healthImportance,
+      initialOverLayMap: this.state.overLayMap,
+      thiefSpeed: this.props.thiefSpeed,
+      textureSize: this.props.textureSize,
+      fromURLInitialPlayerLocation: this.state.initialPlayerLocation,
+      fromURLInitialThiefLocation: this.state.initialThiefLocation
+    }
+
+    window.history.replaceState(
+      {},
+      null,
+      "?" +
+        queryString.stringify(newURLObject, {
+          arrayFormat: "comma"
+        })
+    )
+  }
+
   onMouseHoverTextureEnter(e, x, y) {
     const { selectedEditTexture, editing, followCursor } = this.props
     const { texturesMap, mouseDown, edits, overLayMap } = this.state
@@ -133,29 +169,53 @@ export class Grid extends Component {
     }
   }
 
-  initializeGridWithTextureSize(textureSize) {
+  initializeGridWithTextureSize(textureSize, tMap, oMap, useURL) {
+    console.log(oMap)
     let gridWidth = Math.floor(this.container.offsetWidth / textureSize)
     let gridHeight = Math.floor(this.container.offsetHeight / textureSize)
     let xOffset = (this.container.offsetWidth % textureSize) / 2
     let yOffset = (this.container.offsetHeight % textureSize) / 2
+    let playerLocation =
+      useURL !== undefined && this.props.fromURLInitialPlayerLocation !== null
+        ? this.props.fromURLInitialPlayerLocation
+        : [0, 0]
+    let thiefLocation =
+      useURL !== undefined && this.props.fromURLInitialThiefLocation !== null
+        ? this.props.fromURLInitialThiefLocation
+        : [gridWidth - 1, 0]
+    let texturesMap =
+      tMap === undefined
+        ? new Array(gridWidth * gridHeight).fill(TEXTURES.OBSIDIAN)
+        : new Array(gridWidth * gridHeight).fill(TEXTURES.OBSIDIAN).map((value, index) => {
+            return tMap[index] !== undefined ? tMap[index] : value
+          })
+    let overLayMap =
+      oMap === undefined
+        ? new Array(gridWidth * gridHeight).fill(TEXTURES.TRANSPARENT)
+        : new Array(gridWidth * gridHeight).fill(TEXTURES.TRANSPARENT).map((value, index) => {
+            return oMap[index] !== undefined ? oMap[index] : value
+          })
+          
     this.setState({
-      texturesMap: new Array(gridWidth * gridHeight).fill(TEXTURES.OBSIDIAN),
-      overLayMap: new Array(gridWidth * gridHeight).fill(TEXTURES.TRANSPARENT),
+      texturesMap: texturesMap,
+      overLayMap: overLayMap,
       gridWidth,
       gridHeight,
       xOffset,
       yOffset,
-      initialPlayerLocation: [0, 0],
-      initialThiefLocation: [gridWidth - 1, 0],
-      currentPlayerLocation: [0, 0],
-      currentThiefLocation: [gridWidth - 1, 0],
+      initialPlayerLocation: playerLocation,
+      initialThiefLocation: thiefLocation,
+      currentPlayerLocation: playerLocation,
+      currentThiefLocation: thiefLocation,
+      currentPlayerHealth: this.props.playerMaxHealth,
+      currentThiefHealth: this.props.thiefMaxHealth,
       edits: []
     })
     this.props.envIsReady()
   }
 
   getNextCharacterAction(type) {
-    let action = getNextAction(this.state, type)
+    let action = getNextAction(this.state, this.props, type)
     if (action[0] !== 0 || action[1] !== 0) {
       if (type === CONSTANTS.PLAYER) {
         let newPosition = [
@@ -191,18 +251,53 @@ export class Grid extends Component {
     }
   }
   componentDidMount() {
-    this.initializeGridWithTextureSize(this.props.textureSize)
+    if (
+      this.props.initialTexturesMap.length > 0 &&
+      this.props.initialOverLayMap.length > 0 &&
+      this.props.textureSize >= CONFIG.MIN_TEXTURE_SIZE &&
+      this.props.textureSize <= CONFIG.MAX_TEXTURE_SIZE
+    ) {
+      this.initializeGridWithTextureSize(
+        this.props.textureSize,
+        this.props.initialTexturesMap,
+        this.props.initialOverLayMap,
+        true
+      )
+    } else {
+      this.initializeGridWithTextureSize(this.props.textureSize)
+    }
     this.props.onRef(this)
     window.addEventListener("resize", e =>
       this.initializeGridWithTextureSize(this.props.textureSize)
     )
   }
+  onCharacterFinishMove(characterType) {
+    let capitalized = characterType.charAt(0).toUpperCase() + characterType.slice(1)
+    let characterLocation = this.state["current" + capitalized + "Location"]
+    let currentCharacterHealth = this.state["current" + capitalized + "Health"]
+    let index = characterLocation[1] * this.state.gridWidth + characterLocation[0]
+
+    if (this.state.texturesMap[index] === TEXTURES.LAVA) {
+      this.setCharacterCurrentHealth(characterType, currentCharacterHealth - 1)
+    }
+    if (this.state.overLayMap[index] === TEXTURES.HEALTH_PACK) {
+      let newOverLayMap = this.state.overLayMap.slice()
+      newOverLayMap[index] = TEXTURES.TRANSPARENT
+      this.setState({
+        overLayMap: newOverLayMap
+      })
+      this.setCharacterCurrentHealth(characterType, this.props.playerMaxHealth)
+    }
+  }
+
   onClickRestart() {
     this.player.onClickRestart()
     this.thief.onClickRestart()
     this.setState({
       currentPlayerLocation: this.state.initialPlayerLocation,
-      currentThiefLocation: this.state.initialThiefLocation
+      currentThiefLocation: this.state.initialThiefLocation,
+      currentPlayerHealth: this.props.playerMaxHealth,
+      currentThiefHealth: this.props.thiefMaxHealth
     })
   }
   render() {
@@ -219,43 +314,46 @@ export class Grid extends Component {
       initialThiefLocation
     } = this.state
     const { textureSize, editing, selectedEditTexture, playerSpeed, thiefSpeed } = this.props
+    let isEditingOverLay = selectedEditTexture === TEXTURES.HEALTH_PACK
+    console.log(overLayMap)
     return (
       <Container ref={el => (this.container = el)}>
         {texturesMap.map((texture, index) => {
           const x = index % gridWidth
           const y = Math.floor(index / gridWidth)
           let isBeingEdited = editing && mouseOverX === x && mouseOverY === y
-          let isEditingOverLay = selectedEditTexture === TEXTURES.HEALTH_PACK
-
           return (
-            <span key={index}>
-              <Texture
-                x={x}
-                y={y}
-                key={index + "texture"}
-                textureSize={textureSize}
-                xOffset={xOffset}
-                zIndex={1}
-                yOffset={yOffset}
-                texture={isBeingEdited && !isEditingOverLay ? selectedEditTexture : texture}
-              ></Texture>
-              <Texture
-                x={x}
-                y={y}
-                key={index + "overLay"}
-                onMouseHoverTextureEnter={e => this.onMouseHoverTextureEnter(e, x, y)}
-                onMouseHoverTextureLeave={e => this.onMouseHoverTextureLeave(e)}
-                textureSize={textureSize}
-                onMouseDown={e => this.onMouseDown(e, x, y)}
-                zIndex={2}
-                onMouseUp={this.onMouseUp}
-                xOffset={xOffset}
-                yOffset={yOffset}
-                texture={
-                  isBeingEdited && isEditingOverLay ? selectedEditTexture : overLayMap[index]
-                }
-              ></Texture>
-            </span>
+            <Texture
+              x={x}
+              y={y}
+              key={index}
+              textureSize={textureSize}
+              xOffset={xOffset}
+              zIndex={1}
+              yOffset={yOffset}
+              texture={isBeingEdited && !isEditingOverLay ? selectedEditTexture : texture}
+            ></Texture>
+          )
+        })}
+        {overLayMap.map((overLayTexture, index) => {
+          const x = index % gridWidth
+          const y = Math.floor(index / gridWidth)
+          let isBeingEdited = editing && mouseOverX === x && mouseOverY === y
+          return (
+            <Texture
+              x={x}
+              y={y}
+              key={index}
+              onMouseHoverTextureEnter={e => this.onMouseHoverTextureEnter(e, x, y)}
+              onMouseHoverTextureLeave={e => this.onMouseHoverTextureLeave(e)}
+              textureSize={textureSize}
+              onMouseDown={e => this.onMouseDown(e, x, y)}
+              zIndex={2}
+              onMouseUp={this.onMouseUp}
+              xOffset={xOffset}
+              yOffset={yOffset}
+              texture={isBeingEdited && isEditingOverLay ? selectedEditTexture : overLayTexture}
+            ></Texture>
           )
         })}
         <Character
@@ -269,6 +367,7 @@ export class Grid extends Component {
           inProgress={this.props.inProgress}
           paused={this.props.paused}
           getNextAction={this.getNextCharacterAction}
+          onCharacterFinishMove={this.onCharacterFinishMove}
           renderOnScreen={true}
           type={CONSTANTS.PLAYER}
         ></Character>
@@ -280,6 +379,7 @@ export class Grid extends Component {
           initialCharacterLocation={initialThiefLocation}
           textureSize={textureSize}
           movementSpeed={thiefSpeed}
+          onCharacterFinishMove={this.onCharacterFinishMove}
           inProgress={this.props.inProgress}
           paused={this.props.paused}
           getNextAction={this.getNextCharacterAction}
