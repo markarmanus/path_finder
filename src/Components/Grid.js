@@ -195,7 +195,7 @@ export class Grid extends Component {
         : new Array(gridWidth * gridHeight).fill(TEXTURES.TRANSPARENT).map((value, index) => {
             return oMap[index] !== undefined ? oMap[index] : value
           })
-          
+
     this.setState({
       texturesMap: texturesMap,
       overLayMap: overLayMap,
@@ -315,7 +315,6 @@ export class Grid extends Component {
     } = this.state
     const { textureSize, editing, selectedEditTexture, playerSpeed, thiefSpeed } = this.props
     let isEditingOverLay = selectedEditTexture === TEXTURES.HEALTH_PACK
-    console.log(overLayMap)
     return (
       <Container ref={el => (this.container = el)}>
         {texturesMap.map((texture, index) => {

@@ -1,5 +1,6 @@
 import { TEXTURES } from "./Constants/Textures"
 import { CONFIG } from "./Constants/Config"
+import { CONSTANTS } from "./Constants/Constants"
 const costToGoal = (from, to) => {
   let dx = to[0] - from[0]
   let dy = to[1] - from[1]
@@ -33,7 +34,12 @@ const addToOpen = (nodeToAdd, open) => {
   // check if its already in the open list.
   first: for (let index = 0; index < open.length; index++) {
     let node = open[index]
-    if (nodeToAdd.x === node.x && nodeToAdd.y === node.y && nodeToAdd.g >= node.g) {
+    if (
+      nodeToAdd.x === node.x &&
+      nodeToAdd.y === node.y &&
+      nodeToAdd.g >= node.g &&
+      nodeToAdd.health <= node.health
+    ) {
       added = true
       break first
     }
@@ -71,29 +77,40 @@ const getPath = node => {
 const isOutOfBoundaries = (position, gridWidth, gridHeight) => {
   return position.x < 0 || position.y < 0 || position.x >= gridWidth || position.y >= gridHeight
 }
-const getNextAction = (state, characterType) => {
+const getNextAction = (state, props, characterType) => {
+  if (characterType === CONSTANTS.THIEF) return [0, 0]
   let start =
-    characterType === CONFIG.PLAYER ? state.currentPlayerLocation : state.currentThiefLocation
-  let goal = characterType === CONFIG.PLAYER ? state.currentThiefLocation : [5, 5]
-  let path = []
+    characterType === CONSTANTS.PLAYER ? state.currentPlayerLocation : state.currentThiefLocation
+  let goal = characterType === CONSTANTS.PLAYER ? state.currentThiefLocation : [5, 5]
+  let foundPath = false
+  let bestPathNode = null
+  let bestPathFoundHealth = 0
   let actions = [
     [0, 1],
     [0, -1],
     [1, 0],
-    [-1, 0],
-    [1, 1],
-    [-1, 1],
-    [1, -1],
-    [-1, -1]
+    [-1, 0]
+    // [1, 1],
+    // [-1, 1],
+    // [1, -1],
+    // [-1, -1]
   ]
   let actionsCost = [100, 100, 100, 100, 144, 141, 141, 141]
-  let closed = new Array(state.gridWidth * state.gridHeight).fill(false)
+  let closed = [...new Array(state.gridWidth * state.gridHeight)].map(() =>
+    new Array(props.playerMaxHealth).fill(false)
+  )
+
   let open = []
-  open.push(new Node(start[0], start[1], null, null, 0, costToGoal(start, goal)))
+  open.push(
+    new Node(start[0], start[1], state.currentPlayerHealth, null, null, 0, costToGoal(start, goal))
+  )
   let searchInProgress = true
   while (searchInProgress) {
     if (open.length === 0) {
       searchInProgress = false
+      if (foundPath) {
+        return getPath(bestPathNode)
+      }
       return [0, 0]
     }
     //edge case when start is the goal.
@@ -103,21 +120,39 @@ const getNextAction = (state, characterType) => {
     }
     let node = open.pop()
     if (node.x === goal[0] && node.y === goal[1]) {
-      return getPath(node)
+      if (node.health === 5) {
+        return getPath(node)
+      } else if (node.health > bestPathFoundHealth) {
+        foundPath = true
+        bestPathFoundHealth = node.health
+        bestPathNode = node
+      }
     }
 
     // checks if node in closed, where closed is an array with true false values for any state at x,y by accessing index at y * the with + x
-    if (closed[node.y * state.gridWidth + node.x]) {
+    if (closed[node.y * state.gridWidth + node.x][node.health - 1]) {
       continue
     }
 
-    closed[node.y * state.gridWidth + node.x] = true
+    closed[node.y * state.gridWidth + node.x][node.health - 1] = true
+    if (node.health <= 0) continue
     actions.forEach((action, index) => {
       if (isLegalAction(node.x, node.y, action, state)) {
         const newLocation = { x: node.x + action[0], y: node.y + action[1] }
-        const g = node.g + actionsCost[index]
+        let g = node.g + actionsCost[index]
         const h = costToGoal([newLocation.x, newLocation.y], goal)
-        const newNode = new Node(newLocation.x, newLocation.y, node, action, g, h)
+        const healthPackOnLocation =
+          state.overLayMap[newLocation.y * state.gridWidth + newLocation.x] === TEXTURES.HEALTH_PACK
+        const isLava =
+          state.texturesMap[newLocation.y * state.gridWidth + newLocation.x] === TEXTURES.LAVA
+
+        const health = healthPackOnLocation
+          ? props.playerMaxHealth
+          : isLava
+          ? node.health - 1
+          : node.health
+        if (isLava && !healthPackOnLocation) g += 100
+        const newNode = new Node(newLocation.x, newLocation.y, health, node, action, g, h)
         addToOpen(newNode, open)
       }
     })
@@ -125,9 +160,10 @@ const getNextAction = (state, characterType) => {
 }
 
 class Node {
-  constructor(x, y, parent, action, g, h) {
+  constructor(x, y, health, parent, action, g, h) {
     this.x = x
     this.y = y
+    this.health = health
     this.action = action
     this.parent = parent
     this.g = g

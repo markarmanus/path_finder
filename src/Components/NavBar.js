@@ -109,7 +109,7 @@ export default class NavBar extends Component {
               onChange={value => this.props.onChangeCharacterMaxHealth(CONSTANTS.PLAYER, value)}
               defaultValue={this.props.playerMaxHealth}
               min={1}
-              max={5}
+              max={10}
               step={1}
               tooltipPlacement={"right"}
             />
