@@ -1,6 +1,5 @@
-import React, { Component, useState } from "react"
-import { TEXTURES, TEXTURE_DATA } from "../Constants/Textures"
-import { CONFIG } from "../Constants/Config"
+import React, { Component } from "react"
+import { TEXTURE_DATA } from "../Constants/Textures"
 import styled, { keyframes } from "styled-components"
 
 const getAnimation = numberOfSprites => {

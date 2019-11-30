@@ -1,6 +1,6 @@
 import React, { Component } from "react"
 import styled from "styled-components"
-import { Slider, Button, Typography, Select, Icon } from "antd"
+import { Slider, Button, Typography, Select, Icon, Radio, Checkbox } from "antd"
 import "antd/dist/antd.css"
 import { TEXTURES } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
@@ -74,19 +74,23 @@ export default class NavBar extends Component {
       <Container>
         <Left>
           <StyledSelector
+            labelInValue
             value={
-              this.props.editing ? (
-                this.props.selectedEditTexture
-              ) : (
-                <span>
-                  <Icon style={{ marginRight: "4px" }} type="edit" />
-                  Edit Map
-                </span>
-              )
+              this.props.editing
+                ? { key: this.props.selectedEditTexture }
+                : {
+                    key: 0,
+                    label: (
+                      <span>
+                        <Icon style={{ marginRight: "4px" }} type="edit" />
+                        Edit Map
+                      </span>
+                    )
+                  }
             }
-            onSelect={texture => {
+            onSelect={object => {
               this.props.setEditing(true)
-              this.props.onSelectEditTexture(texture)
+              this.props.setSelectedEditTexture(object.key)
             }}
           >
             <Select.Option value={TEXTURES.OBSIDIAN}>Draw Floor</Select.Option>
@@ -95,7 +99,7 @@ export default class NavBar extends Component {
             <Select.Option value={TEXTURES.HEALTH_PACK}>Add/Remove Health Packs</Select.Option>
           </StyledSelector>
           <DoneButton
-            visible={this.props.editing}
+            visible={Number(this.props.editing)}
             onClick={() => this.props.setEditing(false)}
             type="secondary"
           >
@@ -106,7 +110,7 @@ export default class NavBar extends Component {
           <SliderContainer>
             <Label>Player Max Health</Label>
             <StyledSlider
-              onChange={value => this.props.onChangeCharacterMaxHealth(CONSTANTS.PLAYER, value)}
+              onChange={value => this.props.setCharacterMaxHealth(CONSTANTS.PLAYER, value)}
               defaultValue={this.props.playerMaxHealth}
               min={1}
               max={10}
@@ -115,7 +119,7 @@ export default class NavBar extends Component {
             />
             <Label>Player Speed</Label>
             <StyledSlider
-              onChange={speed => this.props.onChangeCharacterSpeed(CONSTANTS.PLAYER, speed)}
+              onChange={speed => this.props.setCharacterSpeed(CONSTANTS.PLAYER, speed)}
               defaultValue={this.props.playerSpeed}
               min={1}
               max={4}
@@ -124,7 +128,7 @@ export default class NavBar extends Component {
             />
             <Label>Thief Speed</Label>
             <StyledSlider
-              onChange={speed => this.props.onChangeCharacterSpeed(CONSTANTS.THIEF, speed)}
+              onChange={speed => this.props.setCharacterSpeed(CONSTANTS.THIEF, speed)}
               defaultValue={this.props.thiefSpeed}
               min={1}
               max={4}
@@ -134,7 +138,7 @@ export default class NavBar extends Component {
           </SliderContainer>
           {this.props.inProgress ? null : (
             <StyledButton
-              onClick={() => this.props.onSelectEditTexture(TEXTURES.PLAYER_IDLE)}
+              onClick={() => this.props.setSelectedEditTexture(TEXTURES.PLAYER_IDLE)}
               type="secondary"
             >
               Place Officer
@@ -167,7 +171,7 @@ export default class NavBar extends Component {
           )}
           {this.props.inProgress ? null : (
             <StyledButton
-              onClick={() => this.props.onSelectEditTexture(TEXTURES.THIEF_IDLE)}
+              onClick={() => this.props.setSelectedEditTexture(TEXTURES.THIEF_IDLE)}
               type="secondary"
             >
               Place Thief
@@ -183,24 +187,15 @@ export default class NavBar extends Component {
               defaultValue={this.props.textureSize}
               tooltipPlacement={"right"}
             />
-            <Label>Thief Max Health</Label>
-            <StyledSlider
-              onChange={value => this.props.onChangeCharacterMaxHealth(CONSTANTS.THIEF, value)}
-              defaultValue={this.props.thiefMaxHealth}
-              min={1}
-              max={5}
-              step={1}
-              tooltipPlacement={"right"}
-            />
-            <Label>Health Importance</Label>
-            <StyledSlider
-              onChange={value => this.props.onChangeHealthImportance(value)}
-              defaultValue={this.props.healthImportance}
-              min={0.01}
-              max={0.99}
-              step={0.01}
-              tooltipPlacement={"right"}
-            />
+
+            <Label>Search Priority</Label>
+            <Radio.Group
+              value={this.props.searchPriority}
+              onChange={e => this.props.setSearchPriority(e)}
+            >
+              <Radio.Button value={CONSTANTS.HEALTH}>HEALTH</Radio.Button>
+              <Radio.Button value={CONSTANTS.SPEED}>SPEED</Radio.Button>
+            </Radio.Group>
           </SliderContainer>
         </Center>
         <Right>
@@ -218,6 +213,12 @@ export default class NavBar extends Component {
           >
             Share
           </StyledButton>
+          <Checkbox
+            defaultChecked={this.props.allowDiagonalActions}
+            onChange={e => this.props.setAllowDiagonalActions(e.target.checked)}
+          >
+            Diagonal Moves
+          </Checkbox>
           {!this.props.followCursor ? (
             <StyledButton
               style={{ width: "50%" }}

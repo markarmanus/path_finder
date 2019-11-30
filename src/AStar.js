@@ -1,7 +1,6 @@
 import { TEXTURES } from "./Constants/Textures"
-import { CONFIG } from "./Constants/Config"
 import { CONSTANTS } from "./Constants/Constants"
-const costToGoal = (from, to) => {
+const costToLocation = (from, to) => {
   let dx = to[0] - from[0]
   let dy = to[1] - from[1]
   let distance = Math.sqrt(dx * dx + dy * dy)
@@ -32,7 +31,7 @@ const isLegalAction = (x, y, action, state) => {
 const addToOpen = (nodeToAdd, open) => {
   let added = false
   // check if its already in the open list.
-  first: for (let index = 0; index < open.length; index++) {
+  for (let index = 0; index < open.length; index++) {
     let node = open[index]
     if (
       nodeToAdd.x === node.x &&
@@ -41,20 +40,20 @@ const addToOpen = (nodeToAdd, open) => {
       nodeToAdd.health <= node.health
     ) {
       added = true
-      break first
+      break
     }
   }
   // if its not already in the open list add where it belongs based on the f value.
   if (!added) {
     const nodeToAddF = nodeToAdd.g + nodeToAdd.h
     // keep going until the f value is more than or qrual to the one in the open list and that where you add the node.
-    main: for (let index = 0; index < open.length; index++) {
+    for (let index = 0; index < open.length; index++) {
       const node = open[index]
       const nodeF = node.g + node.h
       if (nodeToAddF >= nodeF) {
         added = true
         open.splice(index, 0, nodeToAdd)
-        break main
+        break
       }
     }
   }
@@ -77,24 +76,48 @@ const getPath = node => {
 const isOutOfBoundaries = (position, gridWidth, gridHeight) => {
   return position.x < 0 || position.y < 0 || position.x >= gridWidth || position.y >= gridHeight
 }
+const getNextThiefAction = (actions, state) => {
+  let bestAction = [0, 0]
+  let thiefLocation = state.currentThiefLocation
+  let plyerLocation = state.currentPlayerLocation
+  let leastDistance = costToLocation(thiefLocation, plyerLocation)
+  for (let i = 0; i < actions.length; i++) {
+    let action = actions[i]
+    if (!isLegalAction(thiefLocation[0], thiefLocation[1], action, state)) continue
+    let newThiefLocation = [thiefLocation[0] + action[0], thiefLocation[1] + action[1]]
+    let distance = costToLocation(newThiefLocation, plyerLocation)
+    if (distance > leastDistance) {
+      leastDistance = distance
+      bestAction = action
+    }
+  }
+  return bestAction
+}
 const getNextAction = (state, props, characterType) => {
-  if (characterType === CONSTANTS.THIEF) return [0, 0]
-  let start =
-    characterType === CONSTANTS.PLAYER ? state.currentPlayerLocation : state.currentThiefLocation
-  let goal = characterType === CONSTANTS.PLAYER ? state.currentThiefLocation : [5, 5]
-  let foundPath = false
-  let bestPathNode = null
-  let bestPathFoundHealth = 0
   let actions = [
     [0, 1],
     [0, -1],
     [1, 0],
     [-1, 0]
-    // [1, 1],
-    // [-1, 1],
-    // [1, -1],
-    // [-1, -1]
   ]
+  let diagonalActions = [
+    [1, 1],
+    [-1, 1],
+    [1, -1],
+    [-1, -1]
+  ]
+  if (props.allowDiagonalActions) actions = actions.concat(diagonalActions)
+  if (characterType === CONSTANTS.THIEF) return getNextThiefAction(actions, state)
+  let start = state.currentPlayerLocation
+  let goal = state.currentThiefLocation
+  let foundPath = false
+  let bestPathNode = null
+  let bestPathFoundHealth = 0
+  //edge case when start is the goal.
+  if (start[0] === goal[0] && start[1] === goal[1]) {
+    return [0, 0]
+  }
+
   let actionsCost = [100, 100, 100, 100, 144, 141, 141, 141]
   let closed = [...new Array(state.gridWidth * state.gridHeight)].map(() =>
     new Array(props.playerMaxHealth).fill(false)
@@ -102,25 +125,27 @@ const getNextAction = (state, props, characterType) => {
 
   let open = []
   open.push(
-    new Node(start[0], start[1], state.currentPlayerHealth, null, null, 0, costToGoal(start, goal))
+    new Node(
+      start[0],
+      start[1],
+      state.currentPlayerHealth,
+      null,
+      null,
+      0,
+      costToLocation(start, goal)
+    )
   )
-  let searchInProgress = true
-  while (searchInProgress) {
+  while (true) {
     if (open.length === 0) {
-      searchInProgress = false
       if (foundPath) {
         return getPath(bestPathNode)
       }
       return [0, 0]
     }
-    //edge case when start is the goal.
-    if (start[0] === goal[0] && start[1] === goal[1]) {
-      searchInProgress = false
-      return [0, 0]
-    }
+
     let node = open.pop()
     if (node.x === goal[0] && node.y === goal[1]) {
-      if (node.health === 5) {
+      if (node.health === props.playerMaxHealth || props.searchPriority === CONSTANTS.SPEED) {
         return getPath(node)
       } else if (node.health > bestPathFoundHealth) {
         foundPath = true
@@ -140,7 +165,7 @@ const getNextAction = (state, props, characterType) => {
       if (isLegalAction(node.x, node.y, action, state)) {
         const newLocation = { x: node.x + action[0], y: node.y + action[1] }
         let g = node.g + actionsCost[index]
-        const h = costToGoal([newLocation.x, newLocation.y], goal)
+        const h = costToLocation([newLocation.x, newLocation.y], goal)
         const healthPackOnLocation =
           state.overLayMap[newLocation.y * state.gridWidth + newLocation.x] === TEXTURES.HEALTH_PACK
         const isLava =
@@ -151,7 +176,8 @@ const getNextAction = (state, props, characterType) => {
           : isLava
           ? node.health - 1
           : node.health
-        if (isLava && !healthPackOnLocation) g += 100
+        if (isLava && !healthPackOnLocation) g += 20
+
         const newNode = new Node(newLocation.x, newLocation.y, health, node, action, g, h)
         addToOpen(newNode, open)
       }
