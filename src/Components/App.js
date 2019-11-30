@@ -6,6 +6,7 @@ import { CONFIG } from "../Constants/Config"
 import styled from "styled-components"
 import { TEXTURES } from "../Constants/Textures"
 import queryString from "query-string"
+import { LEVELS } from "../Constants/Levels"
 
 const MainContainer = styled.div`
   display: flex;
@@ -15,15 +16,12 @@ const MainContainer = styled.div`
 export class App extends Component {
   constructor(props) {
     super(props)
-    let params = queryString.parse(this.props.location.search, {
-      arrayFormat: "comma",
-      parseNumbers: true,
-      parseBooleans: true
-    })
+    let params = this.parseLevelData(this.props.location.search)
     this.state = {
       textureSize: params.textureSize ? params.textureSize : CONFIG.DEFAULT_TEXTURE_SIZE,
       selectedEditTexture: null,
       editing: false,
+      selectedLevel: CONFIG.DEFAULT_SELECTED_LEVEL,
       inProgress: false,
       paused: false,
       ready: false,
@@ -62,6 +60,21 @@ export class App extends Component {
     this.onFinishGame = this.onFinishGame.bind(this)
     this.generateLink = this.generateLink.bind(this)
     this.setAllowDiagonalActions = this.setAllowDiagonalActions.bind(this)
+    this.setSelectedLevel = this.setSelectedLevel.bind(this)
+    this.parseLevelData = this.parseLevelData.bind(this)
+  }
+  parseLevelData(value) {
+    return queryString.parse(value, {
+      arrayFormat: "comma",
+      parseNumbers: true,
+      parseBooleans: true
+    })
+  }
+  setSelectedLevel(level) {
+    let levelData = this.parseLevelData(LEVELS[level])
+    this.setState({ selectedLevel: level, ...levelData }, () =>
+      this.grid.onSelectCustomLevel(levelData)
+    )
   }
   setAllowDiagonalActions(value) {
     this.setState({ allowDiagonalActions: value })
@@ -123,8 +136,8 @@ export class App extends Component {
   onClickResume() {
     this.setState({ paused: false })
   }
-  setSearchPriority(e) {
-    this.setState({ searchPriority: e.target.value })
+  setSearchPriority(value) {
+    this.setState({ searchPriority: value })
   }
   render() {
     return (

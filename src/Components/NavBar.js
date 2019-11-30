@@ -1,6 +1,6 @@
 import React, { Component } from "react"
 import styled from "styled-components"
-import { Slider, Button, Typography, Select, Icon, Radio, Checkbox } from "antd"
+import { Slider, Button, Typography, Select, Icon, Radio, Checkbox, Popover } from "antd"
 import "antd/dist/antd.css"
 import { TEXTURES } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
@@ -42,32 +42,110 @@ const Right = styled(CenterFlexBox)`
   padding-right: 10px;
 `
 const StyledSlider = styled(Slider)`
-  width: 75%;
-  display: inline-block;
+  width: 100%;
+  display: block;
   min-width: 50px;
 `
 const Label = styled(Typography.Text)`
-  color: white !important;
   margin-left: 6px;
   display: inline-block;
-  width: 25%;
 `
 
-const DoneButton = styled(Button)`
+const AnimatedButton = styled(Button)`
   margin-left: 10px;
+  margin-right: 10px;
+
   transition: visibility 0.3s linear, opacity 0.3s linear;
   visibility: ${props => (props.visible ? "visible" : "hidden")};
   opacity: ${props => (props.visible ? "1" : "0")};
 `
 const StyledSelector = styled(Select)`
-  width: 90%;
+  width: 100%;
 `
-const SliderContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  width: 30%;
-  align-items: center;
+const PopOverContainer = styled.div`
+  width: 350px;
 `
+const playerOptions = props => (
+  <PopOverContainer>
+    <Label>Player Max Health</Label>
+    <StyledSlider
+      onChange={value => props.setCharacterMaxHealth(CONSTANTS.PLAYER, value)}
+      defaultValue={props.playerMaxHealth}
+      disabled={props.inProgress}
+      min={1}
+      max={10}
+      step={1}
+      tooltipPlacement={"right"}
+    />
+    <Label>Player Speed</Label>
+    <StyledSlider
+      onChange={speed => props.setCharacterSpeed(CONSTANTS.PLAYER, speed)}
+      defaultValue={props.playerSpeed}
+      min={1}
+      max={4}
+      step={1}
+      tooltipPlacement={"right"}
+    />
+  </PopOverContainer>
+)
+const thiefOptions = props => (
+  <PopOverContainer>
+    <Label>Thief Speed</Label>
+    <StyledSlider
+      onChange={speed => props.setCharacterSpeed(CONSTANTS.THIEF, speed)}
+      defaultValue={props.thiefSpeed}
+      min={1}
+      max={4}
+      step={1}
+      tooltipPlacement={"right"}
+    />
+  </PopOverContainer>
+)
+const mapOptions = props => (
+  <PopOverContainer>
+    <Label>Map Scale</Label>
+    <StyledSlider
+      min={CONFIG.MIN_TEXTURE_SIZE}
+      max={CONFIG.MAX_TEXTURE_SIZE}
+      onChange={props.setTextureSize}
+      disabled={props.inProgress}
+      value={props.textureSize}
+      tooltipPlacement={"right"}
+    />
+    <CenterFlexBox style={{ marginBottom: "20px" }}>
+      <Label style={{ flexGrow: 1 }}>Search Priority</Label>
+      <Radio.Group
+        style={{ float: "right" }}
+        value={props.searchPriority}
+        onChange={e => props.setSearchPriority(e.target.value)}
+      >
+        <Radio.Button value={CONSTANTS.HEALTH}>HEALTH</Radio.Button>
+        <Radio.Button value={CONSTANTS.SPEED}>SPEED</Radio.Button>
+      </Radio.Group>
+    </CenterFlexBox>
+    <Checkbox
+      checked={props.allowDiagonalActions}
+      onChange={e => props.setAllowDiagonalActions(e.target.checked)}
+    >
+      Diagonal Moves
+    </Checkbox>
+    <CenterFlexBox style={{ marginTop: "20px" }}>
+      <Label style={{ flexGrow: 1 }}>Pre made Levels</Label>
+      <Radio.Group
+        style={{ float: "right" }}
+        value={props.selectedLevel}
+        onChange={e => props.setSelectedLevel(e.target.value)}
+      >
+        <Radio.Button value={1}>1</Radio.Button>
+        <Radio.Button value={2}>2</Radio.Button>
+        <Radio.Button value={3}>3</Radio.Button>
+        <Radio.Button value={4}>4</Radio.Button>
+        <Radio.Button value={5}>5</Radio.Button>
+        <Radio.Button value={6}>6</Radio.Button>
+      </Radio.Group>
+    </CenterFlexBox>
+  </PopOverContainer>
+)
 export default class NavBar extends Component {
   render() {
     return (
@@ -98,44 +176,21 @@ export default class NavBar extends Component {
             <Select.Option value={TEXTURES.WALL}>Draw Walls</Select.Option>
             <Select.Option value={TEXTURES.HEALTH_PACK}>Add/Remove Health Packs</Select.Option>
           </StyledSelector>
-          <DoneButton
+          <AnimatedButton
             visible={Number(this.props.editing)}
             onClick={() => this.props.setEditing(false)}
             type="secondary"
           >
             Done
-          </DoneButton>
+          </AnimatedButton>
+          <Popover trigger="click" content={mapOptions(this.props)}>
+            <Button>Map Options</Button>
+          </Popover>
         </Left>
         <Center>
-          <SliderContainer>
-            <Label>Player Max Health</Label>
-            <StyledSlider
-              onChange={value => this.props.setCharacterMaxHealth(CONSTANTS.PLAYER, value)}
-              defaultValue={this.props.playerMaxHealth}
-              min={1}
-              max={10}
-              step={1}
-              tooltipPlacement={"right"}
-            />
-            <Label>Player Speed</Label>
-            <StyledSlider
-              onChange={speed => this.props.setCharacterSpeed(CONSTANTS.PLAYER, speed)}
-              defaultValue={this.props.playerSpeed}
-              min={1}
-              max={4}
-              step={1}
-              tooltipPlacement={"right"}
-            />
-            <Label>Thief Speed</Label>
-            <StyledSlider
-              onChange={speed => this.props.setCharacterSpeed(CONSTANTS.THIEF, speed)}
-              defaultValue={this.props.thiefSpeed}
-              min={1}
-              max={4}
-              step={1}
-              tooltipPlacement={"right"}
-            />
-          </SliderContainer>
+          <Popover trigger="click" content={playerOptions(this.props)}>
+            <Button>Player Options</Button>
+          </Popover>
           {this.props.inProgress ? null : (
             <StyledButton
               onClick={() => this.props.setSelectedEditTexture(TEXTURES.PLAYER_IDLE)}
@@ -177,26 +232,9 @@ export default class NavBar extends Component {
               Place Thief
             </StyledButton>
           )}
-
-          <SliderContainer>
-            <Label>Map Scale</Label>
-            <StyledSlider
-              min={CONFIG.MIN_TEXTURE_SIZE}
-              max={CONFIG.MAX_TEXTURE_SIZE}
-              onChange={this.props.setTextureSize}
-              defaultValue={this.props.textureSize}
-              tooltipPlacement={"right"}
-            />
-
-            <Label>Search Priority</Label>
-            <Radio.Group
-              value={this.props.searchPriority}
-              onChange={e => this.props.setSearchPriority(e)}
-            >
-              <Radio.Button value={CONSTANTS.HEALTH}>HEALTH</Radio.Button>
-              <Radio.Button value={CONSTANTS.SPEED}>SPEED</Radio.Button>
-            </Radio.Group>
-          </SliderContainer>
+          <Popover trigger="click" content={thiefOptions(this.props)}>
+            <Button>Thief Options</Button>
+          </Popover>
         </Center>
         <Right>
           <StyledButton
@@ -213,21 +251,15 @@ export default class NavBar extends Component {
           >
             Share
           </StyledButton>
-          <Checkbox
-            defaultChecked={this.props.allowDiagonalActions}
-            onChange={e => this.props.setAllowDiagonalActions(e.target.checked)}
+
+          <AnimatedButton
+            visible={Number(!this.props.followCursor)}
+            style={{ width: "50%" }}
+            onClick={() => this.props.enableFollowCursor()}
+            type="secondary"
           >
-            Diagonal Moves
-          </Checkbox>
-          {!this.props.followCursor ? (
-            <StyledButton
-              style={{ width: "50%" }}
-              onClick={() => this.props.enableFollowCursor()}
-              type="secondary"
-            >
-              Follow Cursor Mode
-            </StyledButton>
-          ) : null}
+            Follow Cursor
+          </AnimatedButton>
         </Right>
       </Container>
     )

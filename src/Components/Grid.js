@@ -98,8 +98,8 @@ export class Grid extends Component {
       initialOverLayMap: this.state.overLayMap,
       thiefSpeed: this.props.thiefSpeed,
       textureSize: this.props.textureSize,
-      firstRenderPlayerLocation: this.state.firstRenderPlayerLocation,
-      firstRenderThiefLocation: this.state.firstRenderThiefLocation
+      firstRenderPlayerLocation: this.state.initialPlayerLocation,
+      firstRenderThiefLocation: this.state.initialThiefLocation
     }
 
     window.history.replaceState(
@@ -304,7 +304,14 @@ export class Grid extends Component {
       this.props.onClickRestart()
     }
   }
-
+  onSelectCustomLevel(levelData) {
+    this.initializeGridWithTextureSize(
+      levelData.textureSize,
+      levelData.initialTexturesMap,
+      levelData.initialOverLayMap,
+      true
+    )
+  }
   onClickRestart() {
     this.player.onClickRestart()
     this.thief.onClickRestart()
