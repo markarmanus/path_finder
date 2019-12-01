@@ -220,6 +220,7 @@ export class Grid extends Component {
 
   getNextCharacterAction(type) {
     let action = getNextAction(this.state, this.props, type)
+    console.log(type, action)
     if (action[0] !== 0 || action[1] !== 0) {
       if (type === CONSTANTS.PLAYER) {
         let newPosition = [

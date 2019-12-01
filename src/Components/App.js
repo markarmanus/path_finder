@@ -142,9 +142,8 @@ export class App extends Component {
   render() {
     return (
       <MainContainer>
-        <NavBar {...this} {...this.state}></NavBar>
         <Grid onRef={ref => (this.grid = ref)} {...this.state} {...this}></Grid>
-        <Footer></Footer>
+        <Footer {...this} {...this.state}></Footer>
       </MainContainer>
     )
   }
