@@ -152,8 +152,8 @@ export class Grid extends Component {
       searchPriority: this.props.searchPriority,
       allowDiagonalActions: this.props.allowDiagonalActions,
       initialOverLayMap: this.state.overLayMap,
-      minHeight: window.innerHeight,
-      minWidth: window.innerWidth,
+      minHeight: window.screen.height,
+      minWidth: window.screen.width,
       thiefSpeed: this.props.thiefSpeed,
       textureSize: this.props.textureSize,
       firstRenderPlayerLocation: this.state.initialPlayerLocation,
@@ -331,8 +331,8 @@ export class Grid extends Component {
       this.props.textureSize >= calculateMinTextureSize(window) &&
       this.props.textureSize <= calculateMaxTextureSize(window)
     let mapCanFit =
-      this.props.URLParams.minHeight < window.innerHeight &&
-      this.props.URLParams.minWidth < window.innerWidth
+      this.props.URLParams.minHeight < window.screen.height &&
+      this.props.URLParams.minWidth < window.screen.width
     if (validTextureSize && mapCanFit) {
       if (this.props.initialTexturesMap.length > 0 && this.props.initialOverLayMap.length > 0) {
         this.initializeGridWithTextureSize(
@@ -345,7 +345,7 @@ export class Grid extends Component {
         this.initializeGridWithTextureSize(this.props.textureSize)
       }
     } else {
-      if (!mapCanFit) {
+      if (!mapCanFit && this.props.URLParams.initialTexturesMap !== undefined) {
         this.setState({
           showModal: true,
           modalMessage:
@@ -379,6 +379,17 @@ export class Grid extends Component {
     if (this.state.finishAfterNextAnimation) {
       this.props.onFinishGame()
       this.props.onClickRestart()
+    }
+    if (
+      currentPlayerLocation[0] === currentThiefLocation[0] &&
+      currentPlayerLocation[1] === currentThiefLocation[1]
+    ) {
+      if (this.props.thiefSpeed === 0) {
+        this.props.onFinishGame()
+        this.props.onClickRestart()
+      } else if (characterType === CONSTANTS.PLAYER && !this.props.followCursor) {
+        this.setState({ finishAfterNextAnimation: true })
+      }
     }
     if (
       currentPlayerLocation[0] === currentThiefLocation[0] &&

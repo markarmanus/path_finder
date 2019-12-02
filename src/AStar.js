@@ -76,7 +76,8 @@ const getPath = node => {
 const isOutOfBoundaries = (position, gridWidth, gridHeight) => {
   return position.x < 0 || position.y < 0 || position.x >= gridWidth || position.y >= gridHeight
 }
-const getNextThiefAction = (actions, state) => {
+const getNextThiefAction = (actions, state, props) => {
+  if (props.thiefSpeed === 0) return [0, 0]
   let bestAction = [0, 0]
   let thiefLocation = state.currentThiefLocation
   let plyerLocation = state.currentPlayerLocation
@@ -107,7 +108,7 @@ const getNextAction = (state, props, characterType) => {
     [-1, -1]
   ]
   if (props.allowDiagonalActions) actions = actions.concat(diagonalActions)
-  if (characterType === CONSTANTS.THIEF) return getNextThiefAction(actions, state)
+  if (characterType === CONSTANTS.THIEF) return getNextThiefAction(actions, state, props)
   let start = state.currentPlayerLocation
   let goal = state.currentThiefLocation
   let foundPath = false
