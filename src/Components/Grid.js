@@ -1,11 +1,11 @@
 import React, { Component } from "react"
 import styled from "styled-components"
 import Texture from "./Texture"
-import { TEXTURES } from "../Constants/Textures"
+import { TEXTURES, TEXTURE_DATA } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
 import Character from "./Character"
 import getNextAction from "../AStar.js"
-import { Modal, Button } from "antd"
+import { Modal, Button, Typography } from "antd"
 
 import { CONSTANTS } from "../Constants/Constants"
 import queryString from "query-string"
@@ -20,6 +20,51 @@ const Container = styled.div`
   position: relative;
   background-image: url("Background.PNG");
 `
+const EditorDoneButton = styled(Button)`
+  border-radius: 20px !important;
+`
+const EditorContainer = styled.div`
+  width: 80px;
+  height: 380px;
+  position: absolute;
+  display: flex;
+  padding: 15px 0;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
+  left: ${props => (props.expanded ? 0 : -70)}px;
+  transition: left 1s;
+  top: 185px;
+  border-radius: 10px;
+  z-index: 4;
+  background-color: ${CONFIG.MAIN_APP_COLOR};
+`
+const EditorArrow = styled(Button)`
+  position: absolute !important;
+  transform: ${props => (props.expanded === "true" ? "rotateZ(-180deg)" : "")};
+  transition: transform 1s;
+  left: 68px;
+  &:focus,
+  &:active {
+    color: white !important;
+    border-color: white !important;
+  }
+  &:hover {
+    color: #40a9ff !important;
+    border-color: #40a9ff !important;
+  }
+  top: 25px;
+`
+const TextureLabel = styled(Typography.Text)`
+  color: white !important;
+  margin-bottom: 5px;
+`
+const Image = styled.img`
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  cursor: pointer;
+`
 export class Grid extends Component {
   constructor(props) {
     super(props)
@@ -30,6 +75,7 @@ export class Grid extends Component {
       modalMessage: "",
       showModal: false,
       gridWidth: 0,
+      editorExpanded: true,
       finishAfterNextAnimation: false,
       gridHeight: 0,
       xOffset: 0,
@@ -135,7 +181,7 @@ export class Grid extends Component {
     ) {
       this.handleHoverWhilePlacingCharacter(selectedEditTexture, x, y)
     } else if (editing) {
-      if (e.target !== null) {
+      if (e.target !== null && e.type.includes("mouse")) {
         e.target.parentElement.style.border = CONFIG.EDITING_BORDER
       }
       if (selectedEditTexture === TEXTURES.HEALTH_PACK) {
@@ -332,6 +378,10 @@ export class Grid extends Component {
       true
     )
   }
+  onClickTexture(texture) {
+    this.props.setEditing(true)
+    this.props.setSelectedEditTexture(texture)
+  }
   onClickRestart() {
     this.player.onClickRestart()
     this.thief.onClickRestart()
@@ -355,7 +405,8 @@ export class Grid extends Component {
       initialPlayerLocation,
       initialThiefLocation,
       showModal,
-      modalMessage
+      modalMessage,
+      editorExpanded
     } = this.state
     const {
       textureSize,
@@ -365,12 +416,14 @@ export class Grid extends Component {
       editing,
       selectedEditTexture,
       playerSpeed,
+      setEditing,
       thiefSpeed
     } = this.props
     let isEditingOverLay = selectedEditTexture === TEXTURES.HEALTH_PACK
     return (
-      <Container ref={el => (this.container = el)}>
+      <Container onMouseLeave={this.onMouseUp} ref={el => (this.container = el)}>
         <Modal
+          closable={false}
           footer={[
             <Button type="primary" onClick={() => this.setState({ showModal: false })}>
               Ok
@@ -381,6 +434,45 @@ export class Grid extends Component {
         >
           {modalMessage}
         </Modal>
+        <EditorContainer expanded={editorExpanded}>
+          <EditorArrow
+            expanded={editorExpanded ? "true" : "false"}
+            onClick={() => this.setState({ editorExpanded: !editorExpanded })}
+            size="small"
+            shape="circle"
+            ghost="true"
+            icon="arrow-right"
+          ></EditorArrow>
+          <Image
+            onClick={() => this.onClickTexture(TEXTURES.OBSIDIAN)}
+            src={TEXTURE_DATA[TEXTURES.OBSIDIAN].src}
+          ></Image>
+          <TextureLabel>Obsidian</TextureLabel>
+          <Image
+            onClick={() => this.onClickTexture(TEXTURES.LAVA)}
+            src={TEXTURE_DATA[TEXTURES.LAVA].src}
+          ></Image>
+          <TextureLabel>Lava</TextureLabel>
+          <Image
+            onClick={() => this.onClickTexture(TEXTURES.WALL)}
+            src={TEXTURE_DATA[TEXTURES.WALL].src}
+          ></Image>
+          <TextureLabel>Wall</TextureLabel>
+          <Image
+            onClick={() => this.onClickTexture(TEXTURES.HEALTH_PACK)}
+            src={TEXTURE_DATA[TEXTURES.WALL].src}
+          ></Image>
+          <TextureLabel>Health</TextureLabel>
+          <EditorDoneButton
+            onClick={() => {
+              setEditing(false)
+              this.setState({ editorExpanded: false })
+            }}
+            size="small"
+          >
+            Done
+          </EditorDoneButton>
+        </EditorContainer>
         {texturesMap.map((texture, index) => {
           const x = index % gridWidth
           const y = Math.floor(index / gridWidth)

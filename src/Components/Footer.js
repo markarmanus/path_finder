@@ -1,21 +1,11 @@
 import React, { Component } from "react"
 import styled from "styled-components"
-import {
-  Slider,
-  Button,
-  Typography,
-  Select,
-  Icon,
-  Radio,
-  Checkbox,
-  Popover,
-  Tooltip,
-  Modal,
-  Input
-} from "antd"
+import { Slider, Button, Typography, Radio, Tooltip, Modal, Input } from "antd"
 import { CONSTANTS } from "../Constants/Constants"
 import { CONFIG } from "../Constants/Config"
 import { TEXTURES } from "../Constants/Textures"
+import { BREAKPOINTS } from "../Constants/BreakPoints"
+
 import { calculateMaxTextureSize, calculateMinTextureSize } from "../HelperFunctions"
 const Container = styled.div`
   width: 100%;
@@ -25,14 +15,11 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   padding-top: 15px;
-  @media (max-height: 800px) {
-    font-size: 13px;
+  @media (max-height: ${BREAKPOINTS.SMALL_HEIGHT}) {
+    font-size: 11px;
   }
-  @media (max-width: 900px) {
-    font-size: 13px;
-  }
-  @media (max-height: 570px) {
-    font-size: 11px !important;
+  @media (max-width: ${BREAKPOINTS.SMALL_WIDTH}) {
+    font-size: 11px;
   }
 `
 const FlexDivCenter = styled.div`
@@ -41,13 +28,13 @@ const FlexDivCenter = styled.div`
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
-  @media (max-height: 960px) {
+  @media (max-height: ${BREAKPOINTS.MEDIUM_HEIGHT}) {
     margin-bottom: 6px;
   }
-  @media (max-height: 800px) {
+  @media (max-height: ${BREAKPOINTS.SMALL_HEIGHT}) {
     margin-bottom: 4px;
   }
-  @media (max-height: 700px) {
+  @media (max-height: ${BREAKPOINTS.VERY_SMALL_HEIGHT}) {
     margin-bottom: 2px;
   }
 `
@@ -58,13 +45,13 @@ const StyledGitButton = styled(Button)`
   display: block;
 `
 const StyledButton = styled(Button)`
-  @media (max-height: 960px) {
+  @media (max-height: ${BREAKPOINTS.MEDIUM_HEIGHT}) {
     height: 35px !important;
   }
-  @media (max-height: 800px) {
+  @media (max-height: ${BREAKPOINTS.SMALL_HEIGHT}) {
     height: 30px !important;
   }
-  @media (max-height: 700px) {
+  @media (max-height: ${BREAKPOINTS.VERY_SMALL_HEIGHT}) {
     height: 25px !important;
   }
   border-radius: 20px !important;
@@ -116,7 +103,7 @@ const StyledSlider = styled(Slider)`
 const SliderContainer = styled.div`
   width: 100%;
   margin-bottom: 60px;
-  @media (max-width: 720px) {
+  @media (max-width: ${BREAKPOINTS.VERY_SMALL_WIDTH}) {
     margin-bottom: 0;
   }
   display: flex;
@@ -127,7 +114,7 @@ const StyledTitle = styled(Typography.Title)`
 `
 const LeftRightContainer = styled.div`
   width: 60%;
-  @media (max-width: 1100px) {
+  @media (max-width: ${BREAKPOINTS.MEDIUM_WIDTH}) {
     width: 100%;
   }
   display: flex;
@@ -136,7 +123,7 @@ const LeftRightContainer = styled.div`
 const PlayButton = styled(Button)`
   margin: ${props => props.margin};
   font-size: ${props => props.fontSize + "px !important"};
-  @media (max-height: 960px) {
+  @media (max-height: ${BREAKPOINTS.MEDIUM_HEIGHT}) {
     font-size: 25px !important;
   }
   height: fit-content !important;
@@ -272,13 +259,14 @@ export default class Footer extends Component {
     document.execCommand("copy")
   }
   render() {
-    const smallScreenWidth = window.innerWidth <= 720
-    const smallScreenHeight = window.innerHeight <= 800
+    const smallScreenWidth = window.innerWidth <= BREAKPOINTS.VERY_SMALL_WIDTH
+    const smallScreenHeight = window.innerHeight <= BREAKPOINTS.SMALL_HEIGHT
     const props = this.props
     const { minTextureSize, maxTextureSize, showModal } = this.state
     return (
       <Container>
         <Modal
+          closable={false}
           footer={[
             <Button key={1} type="primary" onClick={() => this.setState({ showModal: false })}>
               Ok
@@ -326,7 +314,7 @@ export default class Footer extends Component {
           <FlexDivCenter>
             <Tooltip placement="left" title="Undo The Last Edit to The Map">
               <StyledButton onClick={() => props.onClickUndo()} style={{ margin: "0 15px 0 0" }}>
-                Undo Move
+                Undo Edit
               </StyledButton>
             </Tooltip>
             {getPlayButton(props)}
@@ -375,13 +363,13 @@ export default class Footer extends Component {
           </Tooltip>
           {smallScreenWidth
             ? [
-                <Tooltip placement="topLeft" title="Changes The Player Max Health">
+                <Tooltip key={1} placement="topLeft" title="Changes The Player Max Health">
                   <FlexDivCenter>{playerMaxHealth(props, true)}</FlexDivCenter>
                 </Tooltip>,
-                <Tooltip placement="topLeft" title="Changes The Player Movement Speed">
+                <Tooltip key={2} placement="topLeft" title="Changes The Player Movement Speed">
                   <FlexDivCenter>{playerSpeed(props, true)}</FlexDivCenter>
                 </Tooltip>,
-                <Tooltip placement="topLeft" title="Changes The Thief Movement Speed">
+                <Tooltip key={3} placement="topLeft" title="Changes The Thief Movement Speed">
                   <FlexDivCenter>{thiefSpeed(props, true)}</FlexDivCenter>
                 </Tooltip>
               ]
@@ -392,7 +380,7 @@ export default class Footer extends Component {
               <Label style={{ width: "30%" }}>Pre made Levels</Label>
               <Radio.Group
                 value={props.selectedLevel}
-                size={smallScreenHeight ? "small" : "default"}
+                size={smallScreenHeight || smallScreenWidth ? "small" : "default"}
                 onChange={e => props.setSelectedLevel(e.target.value)}
               >
                 <Radio.Button value={1}>1</Radio.Button>
@@ -411,7 +399,7 @@ export default class Footer extends Component {
             <FlexDivCenter>
               <Label style={{ width: "30%" }}>Search Priority</Label>
               <Radio.Group
-                size={smallScreenHeight ? "small" : "default"}
+                size={smallScreenHeight || smallScreenWidth ? "small" : "default"}
                 value={props.searchPriority}
                 onChange={e => props.setSearchPriority(e.target.value)}
               >

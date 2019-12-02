@@ -1,6 +1,5 @@
 import React, { Component } from "react"
 import Grid from "./Grid"
-import NavBar from "./NavBar"
 import Footer from "./Footer"
 import { CONFIG } from "../Constants/Config"
 import styled from "styled-components"
@@ -9,6 +8,8 @@ import queryString from "query-string"
 import { LEVELS } from "../Constants/Levels"
 import { message } from "antd"
 import { calculateBestTextureSize } from "../HelperFunctions"
+import "antd/dist/antd.css"
+
 const MainContainer = styled.div`
   display: flex;
   flex-flow: column;
