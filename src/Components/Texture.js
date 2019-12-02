@@ -1,6 +1,7 @@
 import React, { Component } from "react"
 import { TEXTURE_DATA } from "../Constants/Textures"
 import styled, { keyframes } from "styled-components"
+import { Progress } from "antd"
 
 const getAnimation = numberOfSprites => {
   const translationTo = ((numberOfSprites - 1) / numberOfSprites) * 100
@@ -31,7 +32,25 @@ const Sprite = styled.div`
   left: 0;
   top: 0;
 `
-
+const ProgressBarUnder = styled.div`
+  width: 80%;
+  position: relative;
+  background-color: #661918;
+  margin: auto;
+  border-radius: 10px;
+  height: ${props => props.textureSize * 0.1}px;
+  overflow: hidden;
+`
+const ProgressBarOver = styled.div`
+  width: 100%;
+  position: relative;
+  background-color: #e03836;
+  margin: auto;
+  border-radius: 10px;
+  transition: right 0.5s;
+  right: ${props => 100 - props.healthBarPercentage}%;
+  height: ${props => props.textureSize * 0.1}px;
+`
 export class Texture extends Component {
   constructor(props) {
     super(props)
@@ -44,7 +63,8 @@ export class Texture extends Component {
       nextProps.x !== this.props.x ||
       nextProps.y !== this.props.y ||
       nextProps.xOffset !== this.props.xOffset ||
-      nextProps.yOffset !== this.props.yOffset
+      nextProps.yOffset !== this.props.yOffset ||
+      nextProps.healthBarPercentage !== this.props.healthBarPercentage
     )
   }
 
@@ -60,10 +80,11 @@ export class Texture extends Component {
       onMouseHoverTextureLeave,
       texture,
       zIndex,
-      textureSize
+      textureSize,
+      healthBarPercentage,
+      type
     } = this.props
     const textureData = TEXTURE_DATA[texture]
-
     return (
       <div
         style={{
@@ -77,6 +98,14 @@ export class Texture extends Component {
           userSelect: "none"
         }}
       >
+        {healthBarPercentage !== undefined ? (
+          <ProgressBarUnder textureSize={textureSize}>
+            <ProgressBarOver
+              healthBarPercentage={healthBarPercentage}
+              textureSize={textureSize}
+            ></ProgressBarOver>
+          </ProgressBarUnder>
+        ) : null}
         <Sprite
           textureData={textureData}
           onMouseDown={onMouseDown}
@@ -86,7 +115,6 @@ export class Texture extends Component {
           onTouchEnd={onMouseUp}
           onTouchStart={onMouseDown}
         ></Sprite>
-        )
       </div>
     )
   }

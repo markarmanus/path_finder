@@ -406,6 +406,7 @@ export class Grid extends Component {
       initialThiefLocation,
       showModal,
       modalMessage,
+      currentPlayerHealth,
       editorExpanded
     } = this.state
     const {
@@ -417,6 +418,7 @@ export class Grid extends Component {
       selectedEditTexture,
       playerSpeed,
       setEditing,
+      playerMaxHealth,
       thiefSpeed
     } = this.props
     let isEditingOverLay = selectedEditTexture === TEXTURES.HEALTH_PACK
@@ -523,7 +525,10 @@ export class Grid extends Component {
           paused={paused}
           getNextAction={this.getNextCharacterAction}
           onCharacterFinishMove={this.onCharacterFinishMove}
+          currentHealth={currentPlayerHealth}
+          maxHealth={playerMaxHealth}
           renderOnScreen={true}
+          healthBar={true}
           type={CONSTANTS.PLAYER}
         ></Character>
         <Character

@@ -102,17 +102,23 @@ export class Character extends Component {
       xOffset,
       yOffset,
       onPlaceCharacter,
-      renderOnScreen
+      renderOnScreen,
+      healthBar,
+      currentHealth,
+      maxHealth
     } = this.props
+    let healthBarPercentage = healthBar ? (currentHealth / maxHealth) * 100 : undefined
     return (
       <CharacterSprite id={type}>
         {initialCharacterLocation !== null && renderOnScreen ? (
           <Texture
             x={initialCharacterLocation[0]}
             y={initialCharacterLocation[1]}
+            healthBarPercentage={healthBarPercentage}
             textureSize={textureSize}
             xOffset={xOffset}
             yOffset={yOffset}
+            type={type}
             zIndex={2}
             onMouseDown={() => onPlaceCharacter(type)}
             texture={this.state.currentTexture}
