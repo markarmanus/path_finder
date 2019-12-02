@@ -34,7 +34,7 @@ const EditorContainer = styled.div`
   flex-direction: column;
   left: ${props => (props.expanded ? 0 : -70)}px;
   transition: left 1s;
-  top: 185px;
+  top: ${props => props.top}px;
   border-radius: 10px;
   z-index: 4;
   background-color: ${CONFIG.MAIN_APP_COLOR};
@@ -171,17 +171,31 @@ export class Grid extends Component {
   }
 
   onMouseHoverTextureEnter(e, x, y) {
-    const { selectedEditTexture, editing, followCursor } = this.props
-    const { texturesMap, mouseDown, edits, overLayMap } = this.state
-    const index = y * this.state.gridWidth + x
-
+    const { selectedEditTexture, editing, followCursor, textureSize } = this.props
+    const {
+      texturesMap,
+      mouseDown,
+      edits,
+      overLayMap,
+      xOffset,
+      yOffset,
+      gridWidth,
+      gridHeight
+    } = this.state
+    let index = y * gridWidth + x
+    if (e.type === "touchmove") {
+      let touchX = Math.floor((e.touches[0].pageX - xOffset) / textureSize)
+      let touchY = Math.floor((e.touches[0].pageY - yOffset) / textureSize)
+      if (touchX >= gridWidth || touchY >= gridHeight) return
+      index = touchY * gridWidth + touchX
+    }
     if (
       selectedEditTexture === TEXTURES.PLAYER_IDLE ||
       selectedEditTexture === TEXTURES.THIEF_IDLE
     ) {
       this.handleHoverWhilePlacingCharacter(selectedEditTexture, x, y)
     } else if (editing) {
-      if (e.target !== null && e.type.includes("mouse")) {
+      if (e.target !== null && !("ontouchstart" in window)) {
         e.target.parentElement.style.border = CONFIG.EDITING_BORDER
       }
       if (selectedEditTexture === TEXTURES.HEALTH_PACK) {
@@ -316,7 +330,10 @@ export class Grid extends Component {
     let validTextureSize =
       this.props.textureSize >= calculateMinTextureSize(window) &&
       this.props.textureSize <= calculateMaxTextureSize(window)
-    if (validTextureSize) {
+    let mapCanFit =
+      this.props.URLParams.minHeight < window.innerHeight &&
+      this.props.URLParams.minWidth < window.innerWidth
+    if (validTextureSize && mapCanFit) {
       if (this.props.initialTexturesMap.length > 0 && this.props.initialOverLayMap.length > 0) {
         this.initializeGridWithTextureSize(
           this.props.textureSize,
@@ -328,12 +345,14 @@ export class Grid extends Component {
         this.initializeGridWithTextureSize(this.props.textureSize)
       }
     } else {
-      this.setState({
-        showModal: true,
-        modalMessage:
-          "We could not load the map from the link, the map was created on a screen bigger than the one you are using currently. Try again using a bigger screen."
-      })
-      this.initializeGridWithTextureSize(calculateBestTextureSize(window))
+      if (!mapCanFit) {
+        this.setState({
+          showModal: true,
+          modalMessage:
+            "We could not load the map from the link, the map was created on a screen bigger than the one you are using currently. Try again using a bigger screen."
+        })
+      }
+      this.initializeGridWithTextureSize(this.props.textureSize)
     }
     this.props.onRef(this)
     window.addEventListener("resize", e =>
@@ -436,7 +455,10 @@ export class Grid extends Component {
         >
           {modalMessage}
         </Modal>
-        <EditorContainer expanded={editorExpanded}>
+        <EditorContainer
+          top={this.container !== undefined ? this.container.offsetHeight / 2 : 0}
+          expanded={editorExpanded}
+        >
           <EditorArrow
             expanded={editorExpanded ? "true" : "false"}
             onClick={() => this.setState({ editorExpanded: !editorExpanded })}

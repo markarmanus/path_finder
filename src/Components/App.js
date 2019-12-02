@@ -25,6 +25,7 @@ export class App extends Component {
       editing: false,
       selectedLevel: CONFIG.DEFAULT_SELECTED_LEVEL,
       inProgress: false,
+      URLParams: params,
       paused: false,
       ready: false,
       followCursor: false,
@@ -75,7 +76,7 @@ export class App extends Component {
   setSelectedLevel(level) {
     let levelData = this.parseLevelData(LEVELS[level])
 
-    if (levelData.minHeight <= window.innerHeight && levelData.minWidth <= window.innerWidth) {
+    if (levelData.minHeight <= window.screen.height && levelData.minWidth <= window.screen.width) {
       this.setState({ selectedLevel: level, ...levelData }, () => {
         this.grid.onSelectCustomLevel(levelData)
       })

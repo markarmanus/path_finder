@@ -112,6 +112,7 @@ export class Texture extends Component {
           onMouseUp={onMouseUp}
           onMouseEnter={onMouseHoverTextureEnter}
           onMouseLeave={onMouseHoverTextureLeave}
+          onTouchMove={onMouseHoverTextureEnter}
           onTouchEnd={onMouseUp}
           onTouchStart={onMouseDown}
         ></Sprite>

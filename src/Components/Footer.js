@@ -187,7 +187,7 @@ const thiefSpeed = (props, smallScreen) => {
       key="thiefSpeedSlider"
       onChange={speed => props.setCharacterSpeed(CONSTANTS.THIEF, speed)}
       value={props.thiefSpeed}
-      min={1}
+      min={0}
       max={4}
       step={1}
       tooltipPlacement={"top"}
@@ -197,7 +197,7 @@ const thiefSpeed = (props, smallScreen) => {
   return smallScreen ? (
     component
   ) : (
-    <Tooltip placement="topLeft" title="Changes The Thief Movement Speed">
+    <Tooltip placement="topLeft" title="Changes The Thief Movement Speed, Set to 0 To Stay Still">
       <SliderContainer>{component.map(item => item)}</SliderContainer>
     </Tooltip>
   )
@@ -259,8 +259,9 @@ export default class Footer extends Component {
     document.execCommand("copy")
   }
   render() {
-    const smallScreenWidth = window.innerWidth <= parseInt(BREAKPOINTS.VERY_SMALL_WIDTH, 10)
-    const smallScreenHeight = window.innerHeight <= parseInt(BREAKPOINTS.SMALL_HEIGHT, 10)
+    console.log(window.screen.width)
+    const smallScreenWidth = window.screen.width <= parseInt(BREAKPOINTS.VERY_SMALL_WIDTH, 10)
+    const smallScreenHeight = window.screen.height <= parseInt(BREAKPOINTS.SMALL_HEIGHT, 10)
     const props = this.props
     const { minTextureSize, maxTextureSize, showModal } = this.state
     return (
@@ -369,7 +370,11 @@ export default class Footer extends Component {
                 <Tooltip key={2} placement="topLeft" title="Changes The Player Movement Speed">
                   <FlexDivCenter>{playerSpeed(props, true)}</FlexDivCenter>
                 </Tooltip>,
-                <Tooltip key={3} placement="topLeft" title="Changes The Thief Movement Speed">
+                <Tooltip
+                  key={3}
+                  placement="topLeft"
+                  title="Changes The Thief Movement Speed, Set to 0 To Stay Still"
+                >
                   <FlexDivCenter>{thiefSpeed(props, true)}</FlexDivCenter>
                 </Tooltip>
               ]
