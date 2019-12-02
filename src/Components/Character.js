@@ -83,7 +83,7 @@ export class Character extends Component {
         clearInterval(id)
         character.style.left = character.offsetLeft + direction[0] * remainder + "px"
         character.style.top = character.offsetTop + direction[1] * remainder + "px"
-        this.props.onCharacterFinishMove(this.props.type)
+        this.props.onCharacterFinishMove(this.props.type, direction)
         this.setState({ walking: false })
       } else {
         counter++

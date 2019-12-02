@@ -1,10 +1,22 @@
-import React from "react"
+import React, { Component } from "react"
 import styled from "styled-components"
-import { Slider, Button, Typography, Select, Icon, Radio, Checkbox, Popover, Tooltip } from "antd"
+import {
+  Slider,
+  Button,
+  Typography,
+  Select,
+  Icon,
+  Radio,
+  Checkbox,
+  Popover,
+  Tooltip,
+  Modal,
+  Input
+} from "antd"
 import { CONSTANTS } from "../Constants/Constants"
 import { CONFIG } from "../Constants/Config"
 import { TEXTURES } from "../Constants/Textures"
-
+import { calculateMaxTextureSize, calculateMinTextureSize } from "../HelperFunctions"
 const Container = styled.div`
   width: 100%;
   height: fit-content;
@@ -130,156 +142,212 @@ const getPlayButton = props => {
     ></PlayButton>
   )
 }
-export default function Footer(props) {
-  return (
-    <Container>
-      <Left>
-        <div style={{ width: "60%", display: "flex", flexDirection: "column" }}>
-          <FlexDivCenter>
-            <StyledTitle level={4}>Player Options</StyledTitle>
-          </FlexDivCenter>
-          <Tooltip placement="topLeft" title="Changes The Player Max Health ">
-            <SliderContainer>
-              <Label>Max Health</Label>
-              <StyledSlider
-                onChange={value => props.setCharacterMaxHealth(CONSTANTS.PLAYER, value)}
-                defaultValue={props.playerMaxHealth}
-                disabled={props.inProgress}
-                min={1}
-                max={10}
-                step={1}
-                tooltipPlacement={"top"}
-              />
-            </SliderContainer>
-          </Tooltip>
-          <Tooltip placement="topLeft" title="Changes The Player Movement Speed">
-            <SliderContainer>
-              <Label>Speed</Label>
-              <StyledSlider
-                onChange={speed => props.setCharacterSpeed(CONSTANTS.PLAYER, speed)}
-                defaultValue={props.playerSpeed}
-                min={1}
-                max={4}
-                step={1}
-                tooltipPlacement={"top"}
-              />
-            </SliderContainer>
-          </Tooltip>
-        </div>
-      </Left>
-      <Center>
-        <FlexDivCenter>
-          <Tooltip placement="top" title="The Player Will Follow The Mouse Cursor on The Screen">
-            <StyledButton onClick={() => props.enableFollowCursor()} style={{ margin: "0" }}>
-              Follow Cursor
-            </StyledButton>
-          </Tooltip>
-        </FlexDivCenter>
-        <FlexDivCenter>
-          <Tooltip placement="top" title="Undo The Last Edit to The Map">
-            <StyledButton onClick={() => props.onClickUndo()} style={{ margin: "0 15px 0 0" }}>
-              Undo Move
-            </StyledButton>
-          </Tooltip>
-          {getPlayButton(props)}
-          <Tooltip placement="top" title="Share This Map With a Friend">
-            <StyledButton onClick={() => props.generateLink()} style={{ margin: "0 0 0 15px" }}>
-              Share Map
-            </StyledButton>
-          </Tooltip>
-        </FlexDivCenter>
-        <FlexDivCenter>
-          <Tooltip placement="top" title="Position The Start Location of The Player">
-            <StyledButton
-              onClick={() => props.setSelectedEditTexture(TEXTURES.PLAYER_IDLE)}
-              style={{ margin: "0 10px 0 0" }}
-            >
-              Place Player
-            </StyledButton>
-          </Tooltip>
-          <Tooltip placement="top" title="Position The Start Location of The Thief">
-            <StyledButton
-              onClick={() => props.setSelectedEditTexture(TEXTURES.THIEF_IDLE)}
-              style={{ margin: "0 0 0 10px" }}
-            >
-              Place Thief
-            </StyledButton>
-          </Tooltip>
-        </FlexDivCenter>
-        <Tooltip placement="right" title="Changes The Grid Size">
-          <FlexDivCenter>
-            <Label>Map Scale</Label>
-            <StyledSlider
-              min={CONFIG.MIN_TEXTURE_SIZE}
-              max={CONFIG.MAX_TEXTURE_SIZE}
-              onChange={props.setTextureSize}
-              disabled={props.inProgress}
-              value={props.textureSize}
-              tooltipPlacement={"top"}
-            />
-          </FlexDivCenter>
-        </Tooltip>
-        <Tooltip placement="right" title="Loads a Pre Made Level Created By The Developer">
-          <FlexDivCenter>
-            <Label style={{ width: "30%" }}>Pre made Levels</Label>
-            <Radio.Group
-              value={props.selectedLevel}
-              onChange={e => props.setSelectedLevel(e.target.value)}
-            >
-              <Radio.Button value={1}>1</Radio.Button>
-              <Radio.Button value={2}>2</Radio.Button>
-              <Radio.Button value={3}>3</Radio.Button>
-              <Radio.Button value={4}>4</Radio.Button>
-              <Radio.Button value={5}>5</Radio.Button>
-              <Radio.Button value={6}>6</Radio.Button>
-            </Radio.Group>
-          </FlexDivCenter>
-        </Tooltip>
-        <Tooltip
-          placement="right"
-          title="Changes Wether The Player Maximizes Health or Minimizes Distance"
+export default class Footer extends Component {
+  constructor(props) {
+    super(props)
+    this.state = {
+      minTextureSize: calculateMinTextureSize(window),
+      maxTextureSize: calculateMaxTextureSize(window)
+    }
+  }
+  componentDidMount() {
+    window.addEventListener("resize", e => {
+      this.setState({
+        minTextureSize: calculateMinTextureSize(window),
+        maxTextureSize: calculateMaxTextureSize(window)
+      })
+    })
+  }
+  copyLinkToClipBoard() {
+    let el = document.getElementById("shareLinkInput")
+    el.select()
+    el.setSelectionRange(0, 99999)
+    document.execCommand("copy")
+  }
+  render() {
+    const props = this.props
+    const { minTextureSize, maxTextureSize, showModal } = this.state
+    return (
+      <Container>
+        <Modal
+          footer={[
+            <Button key={1} type="primary" onClick={() => this.setState({ showModal: false })}>
+              Ok
+            </Button>
+          ]}
+          visible={showModal}
+          title={"Share Your Map!"}
         >
+          <Typography.Text>Copy This Link and Send it To your Friends</Typography.Text>
+          <div>
+            <Input
+              id={"shareLinkInput"}
+              style={{ margin: "20px 20px 20px 0", width: "80%" }}
+              defaultValue={window.location.href}
+            ></Input>
+            <Button onClick={() => this.copyLinkToClipBoard()} type="secondary">
+              Copy
+            </Button>
+          </div>
+          <Typography.Text type={"secondary"}>
+            Note that your friend's screen needs to be at least as big as your screen to maintain
+            the shape of the map!
+          </Typography.Text>
+        </Modal>
+        <Left>
+          <div style={{ width: "60%", display: "flex", flexDirection: "column" }}>
+            <FlexDivCenter>
+              <StyledTitle level={4}>Player Options</StyledTitle>
+            </FlexDivCenter>
+            <Tooltip placement="topLeft" title="Changes The Player Max Health ">
+              <SliderContainer>
+                <Label>Max Health</Label>
+                <StyledSlider
+                  onChange={value => props.setCharacterMaxHealth(CONSTANTS.PLAYER, value)}
+                  value={props.playerMaxHealth}
+                  disabled={props.inProgress}
+                  min={1}
+                  max={10}
+                  step={1}
+                  tooltipPlacement={"top"}
+                />
+              </SliderContainer>
+            </Tooltip>
+            <Tooltip placement="topLeft" title="Changes The Player Movement Speed">
+              <SliderContainer>
+                <Label>Speed</Label>
+                <StyledSlider
+                  onChange={speed => props.setCharacterSpeed(CONSTANTS.PLAYER, speed)}
+                  value={props.playerSpeed}
+                  min={1}
+                  max={4}
+                  step={1}
+                  tooltipPlacement={"top"}
+                />
+              </SliderContainer>
+            </Tooltip>
+          </div>
+        </Left>
+        <Center>
           <FlexDivCenter>
-            <Label style={{ width: "30%" }}>Search Priority</Label>
-            <Radio.Group
-              value={props.searchPriority}
-              onChange={e => props.setSearchPriority(e.target.value)}
-            >
-              <Radio.Button value={CONSTANTS.HEALTH}>HEALTH</Radio.Button>
-              <Radio.Button value={CONSTANTS.SPEED}>SPEED</Radio.Button>
-            </Radio.Group>
+            <Tooltip placement="top" title="The Player Will Follow The Mouse Cursor on The Screen">
+              <StyledButton onClick={() => props.enableFollowCursor()} style={{ margin: "0" }}>
+                Follow Cursor
+              </StyledButton>
+            </Tooltip>
           </FlexDivCenter>
-        </Tooltip>
-        <StyledText>Made By Mark Armanious © 2019</StyledText>
-        <StyledGitButton
-          href={"https://github.com/markarmanus/path_finder"}
-          target={"_blank"}
-          shape={"circle"}
-          ghost={true}
-          icon={"github"}
-          type={"link"}
-        ></StyledGitButton>
-      </Center>
-      <Right>
-        <div style={{ width: "60%", display: "flex", flexDirection: "column" }}>
           <FlexDivCenter>
-            <StyledTitle level={4}>Thief Options</StyledTitle>
+            <Tooltip placement="left" title="Undo The Last Edit to The Map">
+              <StyledButton onClick={() => props.onClickUndo()} style={{ margin: "0 15px 0 0" }}>
+                Undo Move
+              </StyledButton>
+            </Tooltip>
+            {getPlayButton(props)}
+            <Tooltip placement="right" title="Share This Map With a Friend">
+              <StyledButton
+                onClick={() => {
+                  props.generateLink()
+                  this.setState({ showModal: true })
+                }}
+                style={{ margin: "0 0 0 15px" }}
+              >
+                Share Map
+              </StyledButton>
+            </Tooltip>
           </FlexDivCenter>
-          <Tooltip placement="topLeft" title="Changes The Thief Movement Speed">
-            <SliderContainer>
-              <Label>Speed</Label>
+          <FlexDivCenter>
+            <Tooltip placement="bottom" title="Position The Start Location of The Player">
+              <StyledButton
+                onClick={() => props.setSelectedEditTexture(TEXTURES.PLAYER_IDLE)}
+                style={{ margin: "0 10px 0 0" }}
+              >
+                Place Player
+              </StyledButton>
+            </Tooltip>
+            <Tooltip placement="bottom" title="Position The Start Location of The Thief">
+              <StyledButton
+                onClick={() => props.setSelectedEditTexture(TEXTURES.THIEF_IDLE)}
+                style={{ margin: "0 0 0 10px" }}
+              >
+                Place Thief
+              </StyledButton>
+            </Tooltip>
+          </FlexDivCenter>
+          <Tooltip placement="right" title="Changes The Grid Size">
+            <FlexDivCenter>
+              <Label>Map Scale</Label>
               <StyledSlider
-                onChange={speed => props.setCharacterSpeed(CONSTANTS.THIEF, speed)}
-                defaultValue={props.thiefSpeed}
-                min={1}
-                max={4}
-                step={1}
+                min={minTextureSize}
+                max={maxTextureSize}
+                onChange={props.setTextureSize}
+                disabled={props.inProgress}
+                value={props.textureSize}
                 tooltipPlacement={"top"}
               />
-            </SliderContainer>
+            </FlexDivCenter>
           </Tooltip>
-        </div>
-      </Right>
-    </Container>
-  )
+          <Tooltip placement="right" title="Loads a Pre Made Level Created By The Developer">
+            <FlexDivCenter>
+              <Label style={{ width: "30%" }}>Pre made Levels</Label>
+              <Radio.Group
+                value={props.selectedLevel}
+                onChange={e => props.setSelectedLevel(e.target.value)}
+              >
+                <Radio.Button value={1}>1</Radio.Button>
+                <Radio.Button value={2}>2</Radio.Button>
+                <Radio.Button value={3}>3</Radio.Button>
+                <Radio.Button value={4}>4</Radio.Button>
+                <Radio.Button value={5}>5</Radio.Button>
+                <Radio.Button value={6}>6</Radio.Button>
+              </Radio.Group>
+            </FlexDivCenter>
+          </Tooltip>
+          <Tooltip
+            placement="right"
+            title="Changes Wether The Player Maximizes Health or Minimizes Distance"
+          >
+            <FlexDivCenter>
+              <Label style={{ width: "30%" }}>Search Priority</Label>
+              <Radio.Group
+                value={props.searchPriority}
+                onChange={e => props.setSearchPriority(e.target.value)}
+              >
+                <Radio.Button value={CONSTANTS.HEALTH}>HEALTH</Radio.Button>
+                <Radio.Button value={CONSTANTS.SPEED}>SPEED</Radio.Button>
+              </Radio.Group>
+            </FlexDivCenter>
+          </Tooltip>
+          <StyledText>Made By Mark Armanious © 2019</StyledText>
+          <StyledGitButton
+            href={"https://github.com/markarmanus/path_finder"}
+            target={"_blank"}
+            shape={"circle"}
+            ghost={true}
+            icon={"github"}
+            type={"link"}
+          ></StyledGitButton>
+        </Center>
+        <Right>
+          <div style={{ width: "60%", display: "flex", flexDirection: "column" }}>
+            <FlexDivCenter>
+              <StyledTitle level={4}>Thief Options</StyledTitle>
+            </FlexDivCenter>
+            <Tooltip placement="topLeft" title="Changes The Thief Movement Speed">
+              <SliderContainer>
+                <Label>Speed</Label>
+                <StyledSlider
+                  onChange={speed => props.setCharacterSpeed(CONSTANTS.THIEF, speed)}
+                  value={props.thiefSpeed}
+                  min={1}
+                  max={4}
+                  step={1}
+                  tooltipPlacement={"top"}
+                />
+              </SliderContainer>
+            </Tooltip>
+          </div>
+        </Right>
+      </Container>
+    )
+  }
 }

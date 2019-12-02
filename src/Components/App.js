@@ -7,7 +7,8 @@ import styled from "styled-components"
 import { TEXTURES } from "../Constants/Textures"
 import queryString from "query-string"
 import { LEVELS } from "../Constants/Levels"
-
+import { message } from "antd"
+import { calculateBestTextureSize } from "../HelperFunctions"
 const MainContainer = styled.div`
   display: flex;
   flex-flow: column;
@@ -18,7 +19,7 @@ export class App extends Component {
     super(props)
     let params = this.parseLevelData(this.props.location.search)
     this.state = {
-      textureSize: params.textureSize ? params.textureSize : CONFIG.DEFAULT_TEXTURE_SIZE,
+      textureSize: params.textureSize ? params.textureSize : calculateBestTextureSize(window),
       selectedEditTexture: null,
       editing: false,
       selectedLevel: CONFIG.DEFAULT_SELECTED_LEVEL,
@@ -26,7 +27,7 @@ export class App extends Component {
       paused: false,
       ready: false,
       followCursor: false,
-      allowDiagonalActions: params.allowDiagonalActions ? params.allowDiagonalActions : false,
+      // allowDiagonalActions: params.allowDiagonalActions ? params.allowDiagonalActions : false,
       initialTexturesMap: params.initialTexturesMap ? params.initialTexturesMap : [],
       initialOverLayMap: params.initialOverLayMap ? params.initialOverLayMap : [],
       playerSpeed: params.playerSpeed ? params.playerSpeed : CONFIG.DEFAULT_PLAYER_SPEED,
@@ -72,9 +73,14 @@ export class App extends Component {
   }
   setSelectedLevel(level) {
     let levelData = this.parseLevelData(LEVELS[level])
-    this.setState({ selectedLevel: level, ...levelData }, () =>
-      this.grid.onSelectCustomLevel(levelData)
-    )
+
+    if (levelData.minHeight <= window.innerHeight && levelData.minWidth <= window.innerWidth) {
+      this.setState({ selectedLevel: level, ...levelData }, () => {
+        this.grid.onSelectCustomLevel(levelData)
+      })
+    } else {
+      message.error("Your Screen is Too Small For This Map!")
+    }
   }
   setAllowDiagonalActions(value) {
     this.setState({ allowDiagonalActions: value })

@@ -5,8 +5,15 @@ import { TEXTURES } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
 import Character from "./Character"
 import getNextAction from "../AStar.js"
+import { Modal, Button } from "antd"
+
 import { CONSTANTS } from "../Constants/Constants"
 import queryString from "query-string"
+import {
+  calculateBestTextureSize,
+  calculateMaxTextureSize,
+  calculateMinTextureSize
+} from "../HelperFunctions"
 
 const Container = styled.div`
   flex: 1;
@@ -20,7 +27,10 @@ export class Grid extends Component {
       texturesMap: [],
       overLayMap: [],
       edits: [],
+      modalMessage: "",
+      showModal: false,
       gridWidth: 0,
+      finishAfterNextAnimation: false,
       gridHeight: 0,
       xOffset: 0,
       yOffset: 0,
@@ -96,6 +106,8 @@ export class Grid extends Component {
       searchPriority: this.props.searchPriority,
       allowDiagonalActions: this.props.allowDiagonalActions,
       initialOverLayMap: this.state.overLayMap,
+      minHeight: window.innerHeight,
+      minWidth: window.innerWidth,
       thiefSpeed: this.props.thiefSpeed,
       textureSize: this.props.textureSize,
       firstRenderPlayerLocation: this.state.initialPlayerLocation,
@@ -220,7 +232,6 @@ export class Grid extends Component {
 
   getNextCharacterAction(type) {
     let action = getNextAction(this.state, this.props, type)
-    console.log(type, action)
     if (action[0] !== 0 || action[1] !== 0) {
       if (type === CONSTANTS.PLAYER) {
         let newPosition = [
@@ -257,8 +268,8 @@ export class Grid extends Component {
   }
   componentDidMount() {
     let validTextureSize =
-      this.props.textureSize >= CONFIG.MIN_TEXTURE_SIZE &&
-      this.props.textureSize <= CONFIG.MAX_TEXTURE_SIZE
+      this.props.textureSize >= calculateMinTextureSize(window) &&
+      this.props.textureSize <= calculateMaxTextureSize(window)
     if (validTextureSize) {
       if (this.props.initialTexturesMap.length > 0 && this.props.initialOverLayMap.length > 0) {
         this.initializeGridWithTextureSize(
@@ -271,20 +282,24 @@ export class Grid extends Component {
         this.initializeGridWithTextureSize(this.props.textureSize)
       }
     } else {
-      this.initializeGridWithTextureSize(CONFIG.DEFAULT_TEXTURE_SIZE)
+      this.setState({
+        showModal: true,
+        modalMessage:
+          "We could not load the map from the link, the map was created on a screen bigger than the one you are using currently. Try again using a bigger screen."
+      })
+      this.initializeGridWithTextureSize(calculateBestTextureSize(window))
     }
     this.props.onRef(this)
     window.addEventListener("resize", e =>
       this.initializeGridWithTextureSize(this.props.textureSize)
     )
   }
-  onCharacterFinishMove(characterType) {
+  onCharacterFinishMove(characterType, action) {
     const { overLayMap, currentPlayerLocation, currentThiefLocation, texturesMap } = this.state
     let capitalized = characterType.charAt(0).toUpperCase() + characterType.slice(1)
     let characterLocation = this.state["current" + capitalized + "Location"]
     let currentCharacterHealth = this.state["current" + capitalized + "Health"]
     let index = characterLocation[1] * this.state.gridWidth + characterLocation[0]
-
     if (texturesMap[index] === TEXTURES.LAVA) {
       this.setCharacterCurrentHealth(characterType, currentCharacterHealth - 1)
     }
@@ -296,13 +311,17 @@ export class Grid extends Component {
       })
       this.setCharacterCurrentHealth(characterType, this.props.playerMaxHealth)
     }
+    if (this.state.finishAfterNextAnimation) {
+      this.props.onFinishGame()
+      this.props.onClickRestart()
+    }
     if (
       currentPlayerLocation[0] === currentThiefLocation[0] &&
       currentPlayerLocation[1] === currentThiefLocation[1] &&
+      characterType === CONSTANTS.PLAYER &&
       !this.props.followCursor
     ) {
-      this.props.onFinishGame()
-      this.props.onClickRestart()
+      this.setState({ finishAfterNextAnimation: true })
     }
   }
   onSelectCustomLevel(levelData) {
@@ -320,7 +339,8 @@ export class Grid extends Component {
       currentPlayerLocation: this.state.initialPlayerLocation,
       currentThiefLocation: this.state.initialThiefLocation,
       currentPlayerHealth: this.props.playerMaxHealth,
-      currentThiefHealth: this.props.thiefMaxHealth
+      currentThiefHealth: this.props.thiefMaxHealth,
+      finishAfterNextAnimation: false
     })
   }
   render() {
@@ -333,7 +353,9 @@ export class Grid extends Component {
       mouseOverX,
       mouseOverY,
       initialPlayerLocation,
-      initialThiefLocation
+      initialThiefLocation,
+      showModal,
+      modalMessage
     } = this.state
     const {
       textureSize,
@@ -348,6 +370,17 @@ export class Grid extends Component {
     let isEditingOverLay = selectedEditTexture === TEXTURES.HEALTH_PACK
     return (
       <Container ref={el => (this.container = el)}>
+        <Modal
+          footer={[
+            <Button type="primary" onClick={() => this.setState({ showModal: false })}>
+              Ok
+            </Button>
+          ]}
+          title={"Sorry"}
+          visible={showModal}
+        >
+          {modalMessage}
+        </Modal>
         {texturesMap.map((texture, index) => {
           const x = index % gridWidth
           const y = Math.floor(index / gridWidth)
