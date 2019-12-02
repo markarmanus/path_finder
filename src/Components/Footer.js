@@ -259,8 +259,8 @@ export default class Footer extends Component {
     document.execCommand("copy")
   }
   render() {
-    const smallScreenWidth = window.innerWidth <= BREAKPOINTS.VERY_SMALL_WIDTH
-    const smallScreenHeight = window.innerHeight <= BREAKPOINTS.SMALL_HEIGHT
+    const smallScreenWidth = window.innerWidth <= parseInt(BREAKPOINTS.VERY_SMALL_WIDTH, 10)
+    const smallScreenHeight = window.innerHeight <= parseInt(BREAKPOINTS.SMALL_HEIGHT, 10)
     const props = this.props
     const { minTextureSize, maxTextureSize, showModal } = this.state
     return (
