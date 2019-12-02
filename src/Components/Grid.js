@@ -18,7 +18,7 @@ import {
 const Container = styled.div`
   flex: 1;
   position: relative;
-  background-image: url("Background.PNG");
+  background-image: url("background.png");
 `
 const EditorDoneButton = styled(Button)`
   border-radius: 20px !important;
