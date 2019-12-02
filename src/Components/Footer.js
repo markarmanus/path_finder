@@ -259,7 +259,6 @@ export default class Footer extends Component {
     document.execCommand("copy")
   }
   render() {
-    console.log(window.screen.width)
     const smallScreenWidth = window.screen.width <= parseInt(BREAKPOINTS.VERY_SMALL_WIDTH, 10)
     const smallScreenHeight = window.screen.height <= parseInt(BREAKPOINTS.SMALL_HEIGHT, 10)
     const props = this.props

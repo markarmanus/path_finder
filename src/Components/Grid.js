@@ -331,8 +331,8 @@ export class Grid extends Component {
       this.props.textureSize >= calculateMinTextureSize(window) &&
       this.props.textureSize <= calculateMaxTextureSize(window)
     let mapCanFit =
-      this.props.URLParams.minHeight < window.screen.height &&
-      this.props.URLParams.minWidth < window.screen.width
+      this.props.URLParams.minHeight <= window.screen.height &&
+      this.props.URLParams.minWidth <= window.screen.width
     if (validTextureSize && mapCanFit) {
       if (this.props.initialTexturesMap.length > 0 && this.props.initialOverLayMap.length > 0) {
         this.initializeGridWithTextureSize(
