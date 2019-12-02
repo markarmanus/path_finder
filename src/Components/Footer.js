@@ -25,6 +25,15 @@ const Container = styled.div`
   display: flex;
   align-items: center;
   padding-top: 15px;
+  @media (max-height: 800px) {
+    font-size: 13px;
+  }
+  @media (max-width: 900px) {
+    font-size: 13px;
+  }
+  @media (max-height: 570px) {
+    font-size: 11px !important;
+  }
 `
 const FlexDivCenter = styled.div`
   width: 100%;
@@ -32,6 +41,15 @@ const FlexDivCenter = styled.div`
   align-items: center;
   justify-content: center;
   margin-bottom: 10px;
+  @media (max-height: 960px) {
+    margin-bottom: 6px;
+  }
+  @media (max-height: 800px) {
+    margin-bottom: 4px;
+  }
+  @media (max-height: 700px) {
+    margin-bottom: 2px;
+  }
 `
 const StyledText = styled(Typography.Text)`
   color: white !important;
@@ -40,6 +58,15 @@ const StyledGitButton = styled(Button)`
   display: block;
 `
 const StyledButton = styled(Button)`
+  @media (max-height: 960px) {
+    height: 35px !important;
+  }
+  @media (max-height: 800px) {
+    height: 30px !important;
+  }
+  @media (max-height: 700px) {
+    height: 25px !important;
+  }
   border-radius: 20px !important;
   height: 43px !important;
 `
@@ -89,15 +116,29 @@ const StyledSlider = styled(Slider)`
 const SliderContainer = styled.div`
   width: 100%;
   margin-bottom: 60px;
+  @media (max-width: 720px) {
+    margin-bottom: 0;
+  }
   display: flex;
   align-items: center;
 `
 const StyledTitle = styled(Typography.Title)`
   color: white !important;
 `
+const LeftRightContainer = styled.div`
+  width: 60%;
+  @media (max-width: 1100px) {
+    width: 100%;
+  }
+  display: flex;
+  flex-direction: column;
+`
 const PlayButton = styled(Button)`
   margin: ${props => props.margin};
   font-size: ${props => props.fontSize + "px !important"};
+  @media (max-height: 960px) {
+    font-size: 25px !important;
+  }
   height: fit-content !important;
   width: fit-content !important;
   &:focus,
@@ -108,6 +149,72 @@ const PlayButton = styled(Button)`
     color: #40a9ff !important;
   }
 `
+const playerMaxHealth = (props, smallScreen) => {
+  const component = [
+    <Label key="playerMaxHealthLabel">{smallScreen ? "Player Max Health" : "Max Health"}</Label>,
+    <StyledSlider
+      key="playerMaxHealthSlider"
+      onChange={value => props.setCharacterMaxHealth(CONSTANTS.PLAYER, value)}
+      value={props.playerMaxHealth}
+      disabled={props.inProgress}
+      min={1}
+      max={10}
+      step={1}
+      tooltipPlacement={"top"}
+    />
+  ]
+  return smallScreen ? (
+    component
+  ) : (
+    <Tooltip placement="topLeft" title="Changes The Player Max Health ">
+      <SliderContainer>{component.map(item => item)}</SliderContainer>
+    </Tooltip>
+  )
+}
+const playerSpeed = (props, smallScreen) => {
+  const component = [
+    <Label key="playerSpeedLabel">{smallScreen ? "Player Speed" : "Speed"}</Label>,
+    <StyledSlider
+      key="playerSpeedSlider"
+      onChange={speed => props.setCharacterSpeed(CONSTANTS.PLAYER, speed)}
+      value={props.playerSpeed}
+      min={1}
+      max={4}
+      step={1}
+      tooltipPlacement={"top"}
+    />
+  ]
+
+  return smallScreen ? (
+    component
+  ) : (
+    <Tooltip placement="topLeft" title="Changes The Player Movement Speed">
+      <SliderContainer>{component.map(item => item)}</SliderContainer>
+    </Tooltip>
+  )
+}
+const thiefSpeed = (props, smallScreen) => {
+  const component = [
+    <Label key="thiefSpeedLabel">{smallScreen ? "Thief Speed" : "Speed"}</Label>,
+    <StyledSlider
+      key="thiefSpeedSlider"
+      onChange={speed => props.setCharacterSpeed(CONSTANTS.THIEF, speed)}
+      value={props.thiefSpeed}
+      min={1}
+      max={4}
+      step={1}
+      tooltipPlacement={"top"}
+    />
+  ]
+
+  return smallScreen ? (
+    component
+  ) : (
+    <Tooltip placement="topLeft" title="Changes The Thief Movement Speed">
+      <SliderContainer>{component.map(item => item)}</SliderContainer>
+    </Tooltip>
+  )
+}
 const getPlayButton = props => {
   return props.inProgress ? (
     <div>
@@ -165,6 +272,8 @@ export default class Footer extends Component {
     document.execCommand("copy")
   }
   render() {
+    const smallScreenWidth = window.innerWidth <= 720
+    const smallScreenHeight = window.innerHeight <= 800
     const props = this.props
     const { minTextureSize, maxTextureSize, showModal } = this.state
     return (
@@ -194,40 +303,18 @@ export default class Footer extends Component {
             the shape of the map!
           </Typography.Text>
         </Modal>
-        <Left>
-          <div style={{ width: "60%", display: "flex", flexDirection: "column" }}>
-            <FlexDivCenter>
-              <StyledTitle level={4}>Player Options</StyledTitle>
-            </FlexDivCenter>
-            <Tooltip placement="topLeft" title="Changes The Player Max Health ">
-              <SliderContainer>
-                <Label>Max Health</Label>
-                <StyledSlider
-                  onChange={value => props.setCharacterMaxHealth(CONSTANTS.PLAYER, value)}
-                  value={props.playerMaxHealth}
-                  disabled={props.inProgress}
-                  min={1}
-                  max={10}
-                  step={1}
-                  tooltipPlacement={"top"}
-                />
-              </SliderContainer>
-            </Tooltip>
-            <Tooltip placement="topLeft" title="Changes The Player Movement Speed">
-              <SliderContainer>
-                <Label>Speed</Label>
-                <StyledSlider
-                  onChange={speed => props.setCharacterSpeed(CONSTANTS.PLAYER, speed)}
-                  value={props.playerSpeed}
-                  min={1}
-                  max={4}
-                  step={1}
-                  tooltipPlacement={"top"}
-                />
-              </SliderContainer>
-            </Tooltip>
-          </div>
-        </Left>
+        {smallScreenWidth ? null : (
+          <Left>
+            <LeftRightContainer>
+              <FlexDivCenter>
+                <StyledTitle level={4}>Player Options</StyledTitle>
+              </FlexDivCenter>
+              {playerMaxHealth(props, false)}
+              {playerSpeed(props, false)}
+            </LeftRightContainer>
+          </Left>
+        )}
+
         <Center>
           <FlexDivCenter>
             <Tooltip placement="top" title="The Player Will Follow The Mouse Cursor on The Screen">
@@ -256,7 +343,7 @@ export default class Footer extends Component {
             </Tooltip>
           </FlexDivCenter>
           <FlexDivCenter>
-            <Tooltip placement="bottom" title="Position The Start Location of The Player">
+            <Tooltip placement="left" title="Position The Start Location of The Player">
               <StyledButton
                 onClick={() => props.setSelectedEditTexture(TEXTURES.PLAYER_IDLE)}
                 style={{ margin: "0 10px 0 0" }}
@@ -264,7 +351,7 @@ export default class Footer extends Component {
                 Place Player
               </StyledButton>
             </Tooltip>
-            <Tooltip placement="bottom" title="Position The Start Location of The Thief">
+            <Tooltip placement="right" title="Position The Start Location of The Thief">
               <StyledButton
                 onClick={() => props.setSelectedEditTexture(TEXTURES.THIEF_IDLE)}
                 style={{ margin: "0 0 0 10px" }}
@@ -286,11 +373,26 @@ export default class Footer extends Component {
               />
             </FlexDivCenter>
           </Tooltip>
+          {smallScreenWidth
+            ? [
+                <Tooltip placement="topLeft" title="Changes The Player Max Health">
+                  <FlexDivCenter>{playerMaxHealth(props, true)}</FlexDivCenter>
+                </Tooltip>,
+                <Tooltip placement="topLeft" title="Changes The Player Movement Speed">
+                  <FlexDivCenter>{playerSpeed(props, true)}</FlexDivCenter>
+                </Tooltip>,
+                <Tooltip placement="topLeft" title="Changes The Thief Movement Speed">
+                  <FlexDivCenter>{thiefSpeed(props, true)}</FlexDivCenter>
+                </Tooltip>
+              ]
+            : null}
+
           <Tooltip placement="right" title="Loads a Pre Made Level Created By The Developer">
             <FlexDivCenter>
               <Label style={{ width: "30%" }}>Pre made Levels</Label>
               <Radio.Group
                 value={props.selectedLevel}
+                size={smallScreenHeight ? "small" : "default"}
                 onChange={e => props.setSelectedLevel(e.target.value)}
               >
                 <Radio.Button value={1}>1</Radio.Button>
@@ -309,6 +411,7 @@ export default class Footer extends Component {
             <FlexDivCenter>
               <Label style={{ width: "30%" }}>Search Priority</Label>
               <Radio.Group
+                size={smallScreenHeight ? "small" : "default"}
                 value={props.searchPriority}
                 onChange={e => props.setSearchPriority(e.target.value)}
               >
@@ -327,26 +430,16 @@ export default class Footer extends Component {
             type={"link"}
           ></StyledGitButton>
         </Center>
-        <Right>
-          <div style={{ width: "60%", display: "flex", flexDirection: "column" }}>
-            <FlexDivCenter>
-              <StyledTitle level={4}>Thief Options</StyledTitle>
-            </FlexDivCenter>
-            <Tooltip placement="topLeft" title="Changes The Thief Movement Speed">
-              <SliderContainer>
-                <Label>Speed</Label>
-                <StyledSlider
-                  onChange={speed => props.setCharacterSpeed(CONSTANTS.THIEF, speed)}
-                  value={props.thiefSpeed}
-                  min={1}
-                  max={4}
-                  step={1}
-                  tooltipPlacement={"top"}
-                />
-              </SliderContainer>
-            </Tooltip>
-          </div>
-        </Right>
+        {smallScreenWidth ? null : (
+          <Right>
+            <LeftRightContainer>
+              <FlexDivCenter>
+                <StyledTitle level={4}>Thief Options</StyledTitle>
+              </FlexDivCenter>
+              {thiefSpeed(props, false)}
+            </LeftRightContainer>
+          </Right>
+        )}
       </Container>
     )
   }
