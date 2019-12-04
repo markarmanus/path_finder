@@ -105,6 +105,7 @@ export class Character extends Component {
       renderOnScreen,
       healthBar,
       currentHealth,
+      zIndex,
       maxHealth
     } = this.props
     let healthBarPercentage = healthBar ? (currentHealth / maxHealth) * 100 : undefined
@@ -119,7 +120,7 @@ export class Character extends Component {
             xOffset={xOffset}
             yOffset={yOffset}
             type={type}
-            zIndex={2}
+            zIndex={zIndex}
             onMouseDown={() => onPlaceCharacter(type)}
             texture={this.state.currentTexture}
           ></Texture>

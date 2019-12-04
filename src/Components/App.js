@@ -36,8 +36,8 @@ export class App extends Component {
       firstRenderPlayerLocation: params.firstRenderPlayerLocation
         ? params.firstRenderPlayerLocation
         : null,
-      firstRenderThiefLocation: params.firstRenderThiefLocation
-        ? params.firstRenderThiefLocation
+      firstRenderChickenLocation: params.firstRenderChickenLocation
+        ? params.firstRenderChickenLocation
         : null,
       playerMaxHealth: params.playerMaxHealth
         ? params.playerMaxHealth
@@ -45,7 +45,7 @@ export class App extends Component {
       searchPriority: params.searchPriority
         ? params.searchPriority
         : CONFIG.DEFAULT_SEARCH_PRIORITY,
-      thiefSpeed: params.thiefSpeed ? params.thiefSpeed : CONFIG.DEFAULT_THIEF_SPEED
+      chickenSpeed: params.chickenSpeed ? params.chickenSpeed : CONFIG.DEFAULT_CHICKEN_SPEED
     }
     this.onClickUndo = this.onClickUndo.bind(this)
     this.setTextureSize = this.setTextureSize.bind(this)
@@ -119,7 +119,7 @@ export class App extends Component {
   }
   setSelectedEditTexture(texture) {
     let isEditing =
-      texture !== null && texture !== TEXTURES.PLAYER_IDLE && texture !== TEXTURES.THIEF_IDLE
+      texture !== null && texture !== TEXTURES.PLAYER_IDLE && texture !== TEXTURES.CHICKEN_IDLE
     this.setState({
       selectedEditTexture: texture,
       editing: isEditing

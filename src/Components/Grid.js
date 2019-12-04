@@ -9,16 +9,13 @@ import { Modal, Button, Typography } from "antd"
 
 import { CONSTANTS } from "../Constants/Constants"
 import queryString from "query-string"
-import {
-  calculateBestTextureSize,
-  calculateMaxTextureSize,
-  calculateMinTextureSize
-} from "../HelperFunctions"
+import { isSide, calculateMaxTextureSize, calculateMinTextureSize } from "../HelperFunctions"
 
 const Container = styled.div`
   flex: 1;
   position: relative;
-  background-image: url("background.png");
+  // background-image: url("background2.png");
+  background: #f6d688;
 `
 const EditorDoneButton = styled(Button)`
   border-radius: 20px !important;
@@ -36,23 +33,14 @@ const EditorContainer = styled.div`
   transition: left 1s;
   top: ${props => props.top}px;
   border-radius: 10px;
-  z-index: 4;
-  background-color: ${CONFIG.MAIN_APP_COLOR};
+  z-index: 6;
+  background-color: ${CONFIG.SECONDARY_APP_COLOR};
 `
 const EditorArrow = styled(Button)`
   position: absolute !important;
   transform: ${props => (props.expanded === "true" ? "rotateZ(-180deg)" : "")};
   transition: transform 1s;
   left: 68px;
-  &:focus,
-  &:active {
-    color: white !important;
-    border-color: white !important;
-  }
-  &:hover {
-    color: #40a9ff !important;
-    border-color: #40a9ff !important;
-  }
   top: 25px;
 `
 const TextureLabel = styled(Typography.Text)`
@@ -82,10 +70,10 @@ export class Grid extends Component {
       yOffset: 0,
       initialPlayerLocation: null,
       currentPlayerLocation: null,
-      initialThiefLocation: null,
-      currentThiefLocation: null,
+      initialChickenLocation: null,
+      currentChickenLocation: null,
       currentPlayerHealth: props.playerMaxHealth,
-      currentThiefHealth: props.thiefMaxHealth,
+      currentChickenHealth: props.chickenMaxHealth,
       mouseOverX: null,
       mouseOverY: null,
       mouseDown: false
@@ -119,9 +107,9 @@ export class Grid extends Component {
     this.setState({ mouseDown: false })
   }
   handleHoverWhilePlacingCharacter(characterType, x, y) {
-    if (characterType === TEXTURES.THIEF_IDLE) {
-      this.resetCharactersLocation(CONSTANTS.THIEF)
-      this.setState({ initialThiefLocation: [x, y], currentThiefLocation: [x, y] })
+    if (characterType === TEXTURES.CHICKEN_IDLE) {
+      this.resetCharactersLocation(CONSTANTS.CHICKEN)
+      this.setState({ initialChickenLocation: [x, y], currentChickenLocation: [x, y] })
     }
     if (characterType === TEXTURES.PLAYER_IDLE) {
       this.resetCharactersLocation(CONSTANTS.PLAYER)
@@ -134,14 +122,14 @@ export class Grid extends Component {
       player.style.left = 0
       player.style.top = 0
     } else {
-      let thief = document.getElementById(CONSTANTS.THIEF)
-      thief.style.left = 0
-      thief.style.top = 0
+      let chicken = document.getElementById(CONSTANTS.CHICKEN)
+      chicken.style.left = 0
+      chicken.style.top = 0
     }
   }
   handleFollowCursor(x, y) {
-    this.resetCharactersLocation(CONSTANTS.THIEF)
-    this.setState({ initialThiefLocation: [x, y], currentThiefLocation: [x, y] })
+    this.resetCharactersLocation(CONSTANTS.CHICKEN)
+    this.setState({ initialChickenLocation: [x, y], currentChickenLocation: [x, y] })
   }
 
   updateURL() {
@@ -154,10 +142,10 @@ export class Grid extends Component {
       initialOverLayMap: this.state.overLayMap,
       minHeight: window.screen.height,
       minWidth: window.screen.width,
-      thiefSpeed: this.props.thiefSpeed,
+      chickenSpeed: this.props.chickenSpeed,
       textureSize: this.props.textureSize,
       firstRenderPlayerLocation: this.state.initialPlayerLocation,
-      firstRenderThiefLocation: this.state.initialThiefLocation
+      firstRenderChickenLocation: this.state.initialChickenLocation
     }
 
     window.history.replaceState(
@@ -183,52 +171,58 @@ export class Grid extends Component {
       gridHeight
     } = this.state
     let index = y * gridWidth + x
+
+    let side = isSide(x, y, gridWidth, gridHeight)
     if (e.type === "touchmove") {
       let touchX = Math.floor((e.touches[0].pageX - xOffset) / textureSize)
       let touchY = Math.floor((e.touches[0].pageY - yOffset) / textureSize)
       if (touchX >= gridWidth || touchY >= gridHeight) return
       index = touchY * gridWidth + touchX
     }
-    if (
-      selectedEditTexture === TEXTURES.PLAYER_IDLE ||
-      selectedEditTexture === TEXTURES.THIEF_IDLE
-    ) {
-      this.handleHoverWhilePlacingCharacter(selectedEditTexture, x, y)
-    } else if (editing) {
-      if (e.target !== null && !("ontouchstart" in window)) {
-        e.target.parentElement.style.border = CONFIG.EDITING_BORDER
-      }
-      if (selectedEditTexture === TEXTURES.HEALTH_PACK) {
-        if (mouseDown) {
-          let newOverLayMap = overLayMap.slice()
-          newOverLayMap[index] =
-            overLayMap[index] === TEXTURES.HEALTH_PACK ? TEXTURES.TRANSPARENT : selectedEditTexture
-          this.setState({
-            overLayMap: newOverLayMap,
-            mouseOverX: x,
-            mouseOverY: y,
-            mouseDown: false,
-            edits: [...edits, { type: CONSTANTS.OVERLAY, texture: overLayMap[index], x, y }]
-          })
-        } else {
-          this.setState({ mouseOverX: x, mouseOverY: y })
+    if (!side) {
+      if (
+        selectedEditTexture === TEXTURES.PLAYER_IDLE ||
+        selectedEditTexture === TEXTURES.CHICKEN_IDLE
+      ) {
+        this.handleHoverWhilePlacingCharacter(selectedEditTexture, x, y)
+      } else if (editing) {
+        if (e.target !== null && !("ontouchstart" in window)) {
+          e.target.parentElement.style.border = CONFIG.EDITING_BORDER
         }
-      } else if (texturesMap[index] !== selectedEditTexture) {
-        if (mouseDown) {
-          let newTexturesMap = texturesMap.slice()
-          newTexturesMap[index] = selectedEditTexture
-          this.setState({
-            texturesMap: newTexturesMap,
-            mouseOverX: x,
-            mouseOverY: y,
-            edits: [...edits, { type: CONSTANTS.TEXTURE, texture: texturesMap[index], x, y }]
-          })
-        } else {
-          this.setState({ mouseOverX: x, mouseOverY: y })
+        if (selectedEditTexture === TEXTURES.HEALTH_PACK) {
+          if (mouseDown) {
+            let newOverLayMap = overLayMap.slice()
+            newOverLayMap[index] =
+              overLayMap[index] === TEXTURES.HEALTH_PACK
+                ? TEXTURES.TRANSPARENT
+                : selectedEditTexture
+            this.setState({
+              overLayMap: newOverLayMap,
+              mouseOverX: x,
+              mouseOverY: y,
+              mouseDown: false,
+              edits: [...edits, { type: CONSTANTS.OVERLAY, texture: overLayMap[index], x, y }]
+            })
+          } else {
+            this.setState({ mouseOverX: x, mouseOverY: y })
+          }
+        } else if (texturesMap[index] !== selectedEditTexture) {
+          if (mouseDown) {
+            let newTexturesMap = texturesMap.slice()
+            newTexturesMap[index] = selectedEditTexture
+            this.setState({
+              texturesMap: newTexturesMap,
+              mouseOverX: x,
+              mouseOverY: y,
+              edits: [...edits, { type: CONSTANTS.TEXTURE, texture: texturesMap[index], x, y }]
+            })
+          } else {
+            this.setState({ mouseOverX: x, mouseOverY: y })
+          }
         }
+      } else if (followCursor) {
+        this.handleFollowCursor(x, y)
       }
-    } else if (followCursor) {
-      this.handleFollowCursor(x, y)
     }
   }
   onMouseHoverTextureLeave(e) {
@@ -254,15 +248,15 @@ export class Grid extends Component {
     let playerLocation =
       useURL !== undefined && this.props.firstRenderPlayerLocation !== null
         ? this.props.firstRenderPlayerLocation
-        : [0, 0]
-    let thiefLocation =
-      useURL !== undefined && this.props.firstRenderThiefLocation !== null
-        ? this.props.firstRenderThiefLocation
-        : [gridWidth - 1, 0]
+        : [1, 1]
+    let chickenLocation =
+      useURL !== undefined && this.props.firstRenderChickenLocation !== null
+        ? this.props.firstRenderChickenLocation
+        : [gridWidth - 2, 1]
     let texturesMap =
       tMap === undefined
-        ? new Array(gridWidth * gridHeight).fill(TEXTURES.OBSIDIAN)
-        : new Array(gridWidth * gridHeight).fill(TEXTURES.OBSIDIAN).map((value, index) => {
+        ? new Array(gridWidth * gridHeight).fill(TEXTURES.FLOOR)
+        : new Array(gridWidth * gridHeight).fill(TEXTURES.FLOOR).map((value, index) => {
             return tMap[index] !== undefined ? tMap[index] : value
           })
     let overLayMap =
@@ -280,11 +274,11 @@ export class Grid extends Component {
       xOffset,
       yOffset,
       initialPlayerLocation: playerLocation,
-      initialThiefLocation: thiefLocation,
+      initialChickenLocation: chickenLocation,
       currentPlayerLocation: playerLocation,
-      currentThiefLocation: thiefLocation,
+      currentChickenLocation: chickenLocation,
       currentPlayerHealth: this.props.playerMaxHealth,
-      currentThiefHealth: this.props.thiefMaxHealth,
+      currentChickenHealth: this.props.chickenMaxHealth,
       edits: []
     })
     this.props.envIsReady()
@@ -301,10 +295,10 @@ export class Grid extends Component {
         this.setState({ currentPlayerLocation: newPosition })
       } else {
         let newPosition = [
-          this.state.currentThiefLocation[0] + action[0],
-          this.state.currentThiefLocation[1] + action[1]
+          this.state.currentChickenLocation[0] + action[0],
+          this.state.currentChickenLocation[1] + action[1]
         ]
-        this.setState({ currentThiefLocation: newPosition })
+        this.setState({ currentChickenLocation: newPosition })
       }
     }
 
@@ -360,12 +354,12 @@ export class Grid extends Component {
     )
   }
   onCharacterFinishMove(characterType, action) {
-    const { overLayMap, currentPlayerLocation, currentThiefLocation, texturesMap } = this.state
+    const { overLayMap, currentPlayerLocation, currentChickenLocation, texturesMap } = this.state
     let capitalized = characterType.charAt(0).toUpperCase() + characterType.slice(1)
     let characterLocation = this.state["current" + capitalized + "Location"]
     let currentCharacterHealth = this.state["current" + capitalized + "Health"]
     let index = characterLocation[1] * this.state.gridWidth + characterLocation[0]
-    if (texturesMap[index] === TEXTURES.LAVA) {
+    if (texturesMap[index] === TEXTURES.FIRE) {
       this.setCharacterCurrentHealth(characterType, currentCharacterHealth - 1)
     }
     if (overLayMap[index] === TEXTURES.HEALTH_PACK) {
@@ -381,10 +375,10 @@ export class Grid extends Component {
       this.props.onClickRestart()
     }
     if (
-      currentPlayerLocation[0] === currentThiefLocation[0] &&
-      currentPlayerLocation[1] === currentThiefLocation[1]
+      currentPlayerLocation[0] === currentChickenLocation[0] &&
+      currentPlayerLocation[1] === currentChickenLocation[1]
     ) {
-      if (this.props.thiefSpeed === 0) {
+      if (this.props.chickenSpeed === 0) {
         this.props.onFinishGame()
         this.props.onClickRestart()
       } else if (characterType === CONSTANTS.PLAYER && !this.props.followCursor) {
@@ -392,8 +386,8 @@ export class Grid extends Component {
       }
     }
     if (
-      currentPlayerLocation[0] === currentThiefLocation[0] &&
-      currentPlayerLocation[1] === currentThiefLocation[1] &&
+      currentPlayerLocation[0] === currentChickenLocation[0] &&
+      currentPlayerLocation[1] === currentChickenLocation[1] &&
       characterType === CONSTANTS.PLAYER &&
       !this.props.followCursor
     ) {
@@ -414,18 +408,19 @@ export class Grid extends Component {
   }
   onClickRestart() {
     this.player.onClickRestart()
-    this.thief.onClickRestart()
+    this.chicken.onClickRestart()
     this.setState({
       currentPlayerLocation: this.state.initialPlayerLocation,
-      currentThiefLocation: this.state.initialThiefLocation,
+      currentChickenLocation: this.state.initialChickenLocation,
       currentPlayerHealth: this.props.playerMaxHealth,
-      currentThiefHealth: this.props.thiefMaxHealth,
+      currentChickenHealth: this.props.chickenMaxHealth,
       finishAfterNextAnimation: false
     })
   }
   render() {
     const {
       gridWidth,
+      gridHeight,
       xOffset,
       yOffset,
       texturesMap,
@@ -433,7 +428,7 @@ export class Grid extends Component {
       mouseOverX,
       mouseOverY,
       initialPlayerLocation,
-      initialThiefLocation,
+      initialChickenLocation,
       showModal,
       modalMessage,
       currentPlayerHealth,
@@ -449,7 +444,7 @@ export class Grid extends Component {
       playerSpeed,
       setEditing,
       playerMaxHealth,
-      thiefSpeed
+      chickenSpeed
     } = this.props
     let isEditingOverLay = selectedEditTexture === TEXTURES.HEALTH_PACK
     return (
@@ -475,24 +470,23 @@ export class Grid extends Component {
             onClick={() => this.setState({ editorExpanded: !editorExpanded })}
             size="small"
             shape="circle"
-            ghost="true"
             icon="arrow-right"
           ></EditorArrow>
           <Image
-            onClick={() => this.onClickTexture(TEXTURES.OBSIDIAN)}
-            src={TEXTURE_DATA[TEXTURES.OBSIDIAN].src}
+            onClick={() => this.onClickTexture(22)}
+            src={TEXTURE_DATA[TEXTURES.FLOOR].src}
           ></Image>
-          <TextureLabel>Obsidian</TextureLabel>
+          <TextureLabel>Floor</TextureLabel>
           <Image
-            onClick={() => this.onClickTexture(TEXTURES.LAVA)}
-            src={TEXTURE_DATA[TEXTURES.LAVA].src}
+            onClick={() => this.onClickTexture(TEXTURES.FIRE)}
+            src={TEXTURE_DATA[TEXTURES.FIRE].icon}
           ></Image>
-          <TextureLabel>Lava</TextureLabel>
+          <TextureLabel>Fire</TextureLabel>
           <Image
             onClick={() => this.onClickTexture(TEXTURES.WALL)}
             src={TEXTURE_DATA[TEXTURES.WALL].src}
           ></Image>
-          <TextureLabel>Wall</TextureLabel>
+          <TextureLabel>Rock</TextureLabel>
           <Image
             onClick={() => this.onClickTexture(TEXTURES.HEALTH_PACK)}
             src={TEXTURE_DATA[TEXTURES.WALL].src}
@@ -511,6 +505,17 @@ export class Grid extends Component {
         {texturesMap.map((texture, index) => {
           const x = index % gridWidth
           const y = Math.floor(index / gridWidth)
+          const left = x === 0
+          const right = x === gridWidth - 1
+          const top = y === 0
+          const bottom = y === gridHeight - 1
+          let side = isSide(x, y, gridWidth, gridHeight)
+          let floorTexture = "FLOOR"
+          if (top) floorTexture += "_TOP"
+          if (bottom) floorTexture += "_BOTTOM"
+          if (left) floorTexture += "_LEFT"
+          if (right) floorTexture += "_RIGHT"
+          let textureToRenderIfSide = TEXTURES[floorTexture]
           let isBeingEdited = editing && mouseOverX === x && mouseOverY === y
           return (
             <Texture
@@ -521,7 +526,13 @@ export class Grid extends Component {
               xOffset={xOffset}
               zIndex={1}
               yOffset={yOffset}
-              texture={isBeingEdited && !isEditingOverLay ? selectedEditTexture : texture}
+              texture={
+                isBeingEdited && !isEditingOverLay
+                  ? selectedEditTexture
+                  : side
+                  ? textureToRenderIfSide
+                  : texture
+              }
             ></Texture>
           )
         })}
@@ -563,21 +574,23 @@ export class Grid extends Component {
           renderOnScreen={true}
           healthBar={true}
           type={CONSTANTS.PLAYER}
+          zIndex={5}
         ></Character>
         <Character
           xOffset={xOffset}
           yOffset={yOffset}
-          onRef={ref => (this.thief = ref)}
+          onRef={ref => (this.chicken = ref)}
           onPlaceCharacter={this.onPlaceCharacter}
-          initialCharacterLocation={initialThiefLocation}
+          initialCharacterLocation={initialChickenLocation}
           textureSize={textureSize}
-          movementSpeed={thiefSpeed}
+          movementSpeed={chickenSpeed}
           onCharacterFinishMove={this.onCharacterFinishMove}
           inProgress={inProgress}
           paused={paused}
           getNextAction={this.getNextCharacterAction}
           renderOnScreen={!followCursor}
-          type={CONSTANTS.THIEF}
+          type={CONSTANTS.CHICKEN}
+          zIndex={4}
         ></Character>
       </Container>
     )

@@ -67,7 +67,7 @@ const PopOverContainer = styled.div`
 `
 const playerOptions = props => (
   <PopOverContainer>
-    <Label>Player Max Health</Label>
+    <Label>player Max Health</Label>
     <StyledSlider
       onChange={value => props.setCharacterMaxHealth(CONSTANTS.PLAYER, value)}
       defaultValue={props.playerMaxHealth}
@@ -77,7 +77,7 @@ const playerOptions = props => (
       step={1}
       tooltipPlacement={"right"}
     />
-    <Label>Player Speed</Label>
+    <Label>player Speed</Label>
     <StyledSlider
       onChange={speed => props.setCharacterSpeed(CONSTANTS.PLAYER, speed)}
       defaultValue={props.playerSpeed}
@@ -88,12 +88,12 @@ const playerOptions = props => (
     />
   </PopOverContainer>
 )
-const thiefOptions = props => (
+const chickenOptions = props => (
   <PopOverContainer>
-    <Label>Thief Speed</Label>
+    <Label>Chicken Speed</Label>
     <StyledSlider
-      onChange={speed => props.setCharacterSpeed(CONSTANTS.THIEF, speed)}
-      defaultValue={props.thiefSpeed}
+      onChange={speed => props.setCharacterSpeed(CONSTANTS.CHICKEN, speed)}
+      defaultValue={props.chickenSpeed}
       min={1}
       max={4}
       step={1}
@@ -172,7 +172,7 @@ export default class NavBar extends Component {
             }}
           >
             <Select.Option value={TEXTURES.OBSIDIAN}>Draw Floor</Select.Option>
-            <Select.Option value={TEXTURES.LAVA}>Draw Lava</Select.Option>
+            <Select.Option value={TEXTURES.FIRE}>Draw Lava</Select.Option>
             <Select.Option value={TEXTURES.WALL}>Draw Walls</Select.Option>
             <Select.Option value={TEXTURES.HEALTH_PACK}>Add/Remove Health Packs</Select.Option>
           </StyledSelector>
@@ -189,7 +189,7 @@ export default class NavBar extends Component {
         </Left>
         <Center>
           <Popover trigger="click" content={playerOptions(this.props)}>
-            <Button>Player Options</Button>
+            <Button>player Options</Button>
           </Popover>
           {this.props.inProgress ? null : (
             <StyledButton
@@ -226,14 +226,14 @@ export default class NavBar extends Component {
           )}
           {this.props.inProgress ? null : (
             <StyledButton
-              onClick={() => this.props.setSelectedEditTexture(TEXTURES.THIEF_IDLE)}
+              onClick={() => this.props.setSelectedEditTexture(TEXTURES.CHICKEN_IDLE)}
               type="secondary"
             >
-              Place Thief
+              Place Chicken
             </StyledButton>
           )}
-          <Popover trigger="click" content={thiefOptions(this.props)}>
-            <Button>Thief Options</Button>
+          <Popover trigger="click" content={chickenOptions(this.props)}>
+            <Button>Chicken Options</Button>
           </Popover>
         </Center>
         <Right>

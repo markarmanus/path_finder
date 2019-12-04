@@ -1,7 +1,6 @@
 import React, { Component } from "react"
 import { TEXTURE_DATA } from "../Constants/Textures"
 import styled, { keyframes } from "styled-components"
-import { Progress } from "antd"
 
 const getAnimation = numberOfSprites => {
   const translationTo = ((numberOfSprites - 1) / numberOfSprites) * 100
@@ -81,8 +80,7 @@ export class Texture extends Component {
       texture,
       zIndex,
       textureSize,
-      healthBarPercentage,
-      type
+      healthBarPercentage
     } = this.props
     const textureData = TEXTURE_DATA[texture]
     return (

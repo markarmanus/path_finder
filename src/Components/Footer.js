@@ -138,7 +138,7 @@ const PlayButton = styled(Button)`
 `
 const playerMaxHealth = (props, smallScreen) => {
   const component = [
-    <Label key="playerMaxHealthLabel">{smallScreen ? "Player Max Health" : "Max Health"}</Label>,
+    <Label key="playerMaxHealthLabel">{smallScreen ? "player Max Health" : "Max Health"}</Label>,
     <StyledSlider
       key="playerMaxHealthSlider"
       onChange={value => props.setCharacterMaxHealth(CONSTANTS.PLAYER, value)}
@@ -153,14 +153,14 @@ const playerMaxHealth = (props, smallScreen) => {
   return smallScreen ? (
     component
   ) : (
-    <Tooltip placement="topLeft" title="Changes The Player Max Health ">
+    <Tooltip placement="topLeft" title="Changes The player Max Health ">
       <SliderContainer>{component.map(item => item)}</SliderContainer>
     </Tooltip>
   )
 }
 const playerSpeed = (props, smallScreen) => {
   const component = [
-    <Label key="playerSpeedLabel">{smallScreen ? "Player Speed" : "Speed"}</Label>,
+    <Label key="playerSpeedLabel">{smallScreen ? "player Speed" : "Speed"}</Label>,
     <StyledSlider
       key="playerSpeedSlider"
       onChange={speed => props.setCharacterSpeed(CONSTANTS.PLAYER, speed)}
@@ -175,20 +175,21 @@ const playerSpeed = (props, smallScreen) => {
   return smallScreen ? (
     component
   ) : (
-    <Tooltip placement="topLeft" title="Changes The Player Movement Speed">
+    <Tooltip placement="topLeft" title="Changes The player Movement Speed">
       <SliderContainer>{component.map(item => item)}</SliderContainer>
     </Tooltip>
   )
 }
-const thiefSpeed = (props, smallScreen) => {
+const chickenSpeed = (props, smallScreen) => {
   const component = [
-    <Label key="thiefSpeedLabel">{smallScreen ? "Thief Speed" : "Speed"}</Label>,
+    <Label key="chickenSpeedLabel">{smallScreen ? "Chicken Speed" : "Speed"}</Label>,
     <StyledSlider
-      key="thiefSpeedSlider"
-      onChange={speed => props.setCharacterSpeed(CONSTANTS.THIEF, speed)}
-      value={props.thiefSpeed}
+      key="chickenSpeedSlider"
+      onChange={speed => props.setCharacterSpeed(CONSTANTS.CHICKEN, speed)}
+      value={props.chickenSpeed}
       min={0}
       max={4}
+      disabled={true}
       step={1}
       tooltipPlacement={"top"}
     />
@@ -197,7 +198,7 @@ const thiefSpeed = (props, smallScreen) => {
   return smallScreen ? (
     component
   ) : (
-    <Tooltip placement="topLeft" title="Changes The Thief Movement Speed, Set to 0 To Stay Still">
+    <Tooltip placement="topLeft" title="Chicken AI Coming Soon!">
       <SliderContainer>{component.map(item => item)}</SliderContainer>
     </Tooltip>
   )
@@ -305,7 +306,7 @@ export default class Footer extends Component {
 
         <Center>
           <FlexDivCenter>
-            <Tooltip placement="top" title="The Player Will Follow The Mouse Cursor on The Screen">
+            <Tooltip placement="top" title="The player Will Follow The Mouse Cursor on The Screen">
               <StyledButton onClick={() => props.enableFollowCursor()} style={{ margin: "0" }}>
                 Follow Cursor
               </StyledButton>
@@ -331,7 +332,7 @@ export default class Footer extends Component {
             </Tooltip>
           </FlexDivCenter>
           <FlexDivCenter>
-            <Tooltip placement="left" title="Position The Start Location of The Player">
+            <Tooltip placement="left" title="Position The Start Location of The player">
               <StyledButton
                 onClick={() => props.setSelectedEditTexture(TEXTURES.PLAYER_IDLE)}
                 style={{ margin: "0 10px 0 0" }}
@@ -339,12 +340,12 @@ export default class Footer extends Component {
                 Place Player
               </StyledButton>
             </Tooltip>
-            <Tooltip placement="right" title="Position The Start Location of The Thief">
+            <Tooltip placement="right" title="Position The Start Location of The Chicken">
               <StyledButton
-                onClick={() => props.setSelectedEditTexture(TEXTURES.THIEF_IDLE)}
+                onClick={() => props.setSelectedEditTexture(TEXTURES.CHICKEN_IDLE)}
                 style={{ margin: "0 0 0 10px" }}
               >
-                Place Thief
+                Place Chicken
               </StyledButton>
             </Tooltip>
           </FlexDivCenter>
@@ -363,18 +364,14 @@ export default class Footer extends Component {
           </Tooltip>
           {smallScreenWidth
             ? [
-                <Tooltip key={1} placement="topLeft" title="Changes The Player Max Health">
+                <Tooltip key={1} placement="topLeft" title="Changes The player Max Health">
                   <FlexDivCenter>{playerMaxHealth(props, true)}</FlexDivCenter>
                 </Tooltip>,
-                <Tooltip key={2} placement="topLeft" title="Changes The Player Movement Speed">
+                <Tooltip key={2} placement="topLeft" title="Changes The player Movement Speed">
                   <FlexDivCenter>{playerSpeed(props, true)}</FlexDivCenter>
                 </Tooltip>,
-                <Tooltip
-                  key={3}
-                  placement="topLeft"
-                  title="Changes The Thief Movement Speed, Set to 0 To Stay Still"
-                >
-                  <FlexDivCenter>{thiefSpeed(props, true)}</FlexDivCenter>
+                <Tooltip key={3} placement="topLeft" title="Chicken AI Coming Soon!">
+                  <FlexDivCenter>{chickenSpeed(props, true)}</FlexDivCenter>
                 </Tooltip>
               ]
             : null}
@@ -398,7 +395,7 @@ export default class Footer extends Component {
           </Tooltip>
           <Tooltip
             placement="right"
-            title="Changes Wether The Player Maximizes Health or Minimizes Distance"
+            title="Changes Wether The player Maximizes Health or Minimizes Distance"
           >
             <FlexDivCenter>
               <Label style={{ width: "30%" }}>Search Priority</Label>
@@ -426,9 +423,9 @@ export default class Footer extends Component {
           <Right>
             <LeftRightContainer>
               <FlexDivCenter>
-                <StyledTitle level={4}>Thief Options</StyledTitle>
+                <StyledTitle level={4}>Chicken Options</StyledTitle>
               </FlexDivCenter>
-              {thiefSpeed(props, false)}
+              {chickenSpeed(props, false)}
             </LeftRightContainer>
           </Right>
         )}

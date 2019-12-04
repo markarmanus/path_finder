@@ -1,6 +1,6 @@
 export const CONSTANTS = {
   PLAYER: "player",
-  THIEF: "thief",
+  CHICKEN: "chicken",
   OVERLAY: "overLay",
   TEXTURE: "texture",
   HEALTH: "health",

@@ -1,5 +1,6 @@
 import { TEXTURES } from "./Constants/Textures"
 import { CONSTANTS } from "./Constants/Constants"
+import { isSide } from "./HelperFunctions"
 const costToLocation = (from, to) => {
   let dx = to[0] - from[0]
   let dy = to[1] - from[1]
@@ -76,17 +77,19 @@ const getPath = node => {
 const isOutOfBoundaries = (position, gridWidth, gridHeight) => {
   return position.x < 0 || position.y < 0 || position.x >= gridWidth || position.y >= gridHeight
 }
-const getNextThiefAction = (actions, state, props) => {
-  if (props.thiefSpeed === 0) return [0, 0]
+const getNextChickenAction = (actions, state, props) => {
+  if (props.chickenSpeed === 0) return [0, 0]
   let bestAction = [0, 0]
-  let thiefLocation = state.currentThiefLocation
-  let plyerLocation = state.currentPlayerLocation
-  let leastDistance = costToLocation(thiefLocation, plyerLocation)
+  let chickenLocation = state.currentChickenLocation
+  let playerLocation = state.currentPlayerLocation
+  let leastDistance = costToLocation(chickenLocation, playerLocation)
   for (let i = 0; i < actions.length; i++) {
     let action = actions[i]
-    if (!isLegalAction(thiefLocation[0], thiefLocation[1], action, state)) continue
-    let newThiefLocation = [thiefLocation[0] + action[0], thiefLocation[1] + action[1]]
-    let distance = costToLocation(newThiefLocation, plyerLocation)
+    if (!isLegalAction(chickenLocation[0], chickenLocation[1], action, state)) continue
+    let newChickenLocation = [chickenLocation[0] + action[0], chickenLocation[1] + action[1]]
+    if (isSide(newChickenLocation[0], newChickenLocation[1], state.gridWidth, state.gridHeight))
+      continue
+    let distance = costToLocation(newChickenLocation, playerLocation)
     if (distance > leastDistance) {
       leastDistance = distance
       bestAction = action
@@ -108,9 +111,9 @@ const getNextAction = (state, props, characterType) => {
     [-1, -1]
   ]
   if (props.allowDiagonalActions) actions = actions.concat(diagonalActions)
-  if (characterType === CONSTANTS.THIEF) return getNextThiefAction(actions, state, props)
+  if (characterType === CONSTANTS.CHICKEN) return getNextChickenAction(actions, state, props)
   let start = state.currentPlayerLocation
-  let goal = state.currentThiefLocation
+  let goal = state.currentChickenLocation
   let foundPath = false
   let bestPathNode = null
   let bestPathFoundHealth = 0
@@ -126,15 +129,7 @@ const getNextAction = (state, props, characterType) => {
 
   let open = []
   open.push(
-    new Node(
-      start[0],
-      start[1],
-      state.currentPlayerHealth,
-      null,
-      null,
-      0,
-      costToLocation(start, goal)
-    )
+    new Node(start[0], start[1], state.currentPlayerHealth, null, null, 0, costToLocation(start, goal))
   )
   while (true) {
     if (open.length === 0) {
@@ -163,14 +158,17 @@ const getNextAction = (state, props, characterType) => {
     closed[node.y * state.gridWidth + node.x][node.health - 1] = true
     if (node.health <= 0) continue
     actions.forEach((action, index) => {
-      if (isLegalAction(node.x, node.y, action, state)) {
+      if (
+        isLegalAction(node.x, node.y, action, state) &&
+        !isSide(node.x, node.y, state.gridWidth, state.gridHeight)
+      ) {
         const newLocation = { x: node.x + action[0], y: node.y + action[1] }
         let g = node.g + actionsCost[index]
         const h = costToLocation([newLocation.x, newLocation.y], goal)
         const healthPackOnLocation =
           state.overLayMap[newLocation.y * state.gridWidth + newLocation.x] === TEXTURES.HEALTH_PACK
         const isLava =
-          state.texturesMap[newLocation.y * state.gridWidth + newLocation.x] === TEXTURES.LAVA
+          state.texturesMap[newLocation.y * state.gridWidth + newLocation.x] === TEXTURES.FIRE
 
         const health = healthPackOnLocation
           ? props.playerMaxHealth
