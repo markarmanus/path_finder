@@ -84,6 +84,9 @@ export class App extends Component {
       message.error("Your Screen is Too Small For This Map!")
     }
   }
+  componentDidMount() {
+    message.info("Click on The Help Icon At Bottom To Help You Start!")
+  }
   setAllowDiagonalActions(value) {
     this.setState({ allowDiagonalActions: value })
   }

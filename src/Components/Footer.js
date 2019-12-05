@@ -1,6 +1,6 @@
 import React, { Component } from "react"
 import styled from "styled-components"
-import { Slider, Button, Typography, Radio, Tooltip, Modal, Input } from "antd"
+import { Slider, Button, Typography, Radio, Tooltip, Modal, Input, Carousel } from "antd"
 import { CONSTANTS } from "../Constants/Constants"
 import { CONFIG } from "../Constants/Config"
 import { TEXTURES } from "../Constants/Textures"
@@ -22,6 +22,19 @@ const Container = styled.div`
     font-size: 11px;
   }
 `
+const TutorialImage = styled.img`
+  width: 100%;
+  height: 200px;
+`
+const TutorialButtonContainer = styled.div`
+  position: absolute;
+  top: 35%;
+  width: 100%;
+  display: flex;
+  left: 0;
+  padding: 0 24px 0 24px;
+  justify-content: space-between;
+`
 const FlexDivCenter = styled.div`
   width: 100%;
   display: flex;
@@ -42,7 +55,7 @@ const StyledText = styled(Typography.Text)`
   color: white !important;
 `
 const StyledGitButton = styled(Button)`
-  display: block;
+  display: inline-block;
 `
 const StyledButton = styled(Button)`
   @media (max-height: ${BREAKPOINTS.MEDIUM_HEIGHT}) {
@@ -242,7 +255,9 @@ export default class Footer extends Component {
     super(props)
     this.state = {
       minTextureSize: calculateMinTextureSize(window),
-      maxTextureSize: calculateMaxTextureSize(window)
+      maxTextureSize: calculateMaxTextureSize(window),
+      showTutorial: false,
+      showModal: false
     }
   }
   componentDidMount() {
@@ -263,9 +278,68 @@ export default class Footer extends Component {
     const smallScreenWidth = window.screen.width <= parseInt(BREAKPOINTS.VERY_SMALL_WIDTH, 10)
     const smallScreenHeight = window.screen.height <= parseInt(BREAKPOINTS.SMALL_HEIGHT, 10)
     const props = this.props
-    const { minTextureSize, maxTextureSize, showModal } = this.state
+    const { minTextureSize, maxTextureSize, showModal, showTutorial } = this.state
     return (
       <Container>
+        <Modal
+          onCancel={() => this.setState({ showTutorial: false })}
+          closable={true}
+          footer={null}
+          visible={showTutorial}
+          title={null}
+        >
+          <Typography.Title style={{ textAlign: "center" }} level={4}>
+            Run Chicken!!
+          </Typography.Title>
+          <TutorialButtonContainer>
+            <Button
+              style={{ zIndex: 1 }}
+              ghost={true}
+              type="link"
+              shape="circle"
+              onClick={() => this.carousel.prev()}
+              icon="left"
+            ></Button>
+            <Button
+              style={{ zIndex: 1 }}
+              ghost={true}
+              onClick={() => this.carousel.next()}
+              type="link"
+              shape="circle"
+              icon="right"
+            ></Button>
+          </TutorialButtonContainer>
+
+          <Carousel ref={node => (this.carousel = node)}>
+            <TutorialImage
+              style={{ width: "100%", height: "200px" }}
+              src="background.png"
+            ></TutorialImage>
+            <TutorialImage
+              style={{ width: "100%", height: "200px" }}
+              src="background.png"
+            ></TutorialImage>
+
+            <TutorialImage
+              style={{ width: "100%", height: "200px" }}
+              src="background.png"
+            ></TutorialImage>
+            <div>
+              <TutorialImage
+                style={{ width: "100%", height: "200px" }}
+                src="background.png"
+              ></TutorialImage>
+              <Typography.Text>
+                This is the best way to do this i dont htinwdadwdaThis is the best way to do this i
+                dont htinwdadwdaThis is the best way to do this i dont htinwdadwdaThis is the best
+                way to do this i dont htinwdadwdaThis is the best way to do this i dont
+                htinwdadwdaThis is the best way to do this i dont htinwdadwda
+              </Typography.Text>
+            </div>
+          </Carousel>
+          <div></div>
+        </Modal>
+
         <Modal
           closable={false}
           footer={[
@@ -410,14 +484,23 @@ export default class Footer extends Component {
             </FlexDivCenter>
           </Tooltip>
           <StyledText>Made By Mark Armanious © 2019</StyledText>
-          <StyledGitButton
-            href={"https://github.com/markarmanus/path_finder"}
-            target={"_blank"}
-            shape={"circle"}
-            ghost={true}
-            icon={"github"}
-            type={"link"}
-          ></StyledGitButton>
+          <div>
+            <StyledGitButton
+              shape={"circle"}
+              ghost={true}
+              icon={"question-circle"}
+              type={"link"}
+              onClick={() => this.setState({ showTutorial: true })}
+            ></StyledGitButton>
+            <StyledGitButton
+              href={"https://github.com/markarmanus/path_finder"}
+              target={"_blank"}
+              shape={"circle"}
+              ghost={true}
+              icon={"github"}
+              type={"link"}
+            ></StyledGitButton>
+          </div>
         </Center>
         {smallScreenWidth ? null : (
           <Right>
