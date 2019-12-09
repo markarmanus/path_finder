@@ -76,7 +76,8 @@ export class Grid extends Component {
       currentChickenHealth: props.chickenMaxHealth,
       mouseOverX: null,
       mouseOverY: null,
-      mouseDown: false
+      leftMouseDown: false,
+      rightMouseDown: false
     }
     this.onMouseDown = this.onMouseDown.bind(this)
     this.onMouseUp = this.onMouseUp.bind(this)
@@ -96,15 +97,21 @@ export class Grid extends Component {
   }
   onMouseDown(e, x, y) {
     e.persist()
-    this.setState({ mouseDown: true }, () => {
-      this.onMouseHoverTextureEnter(e, x, y)
-    })
+    if (e.button === 0) {
+      this.setState({ leftMouseDown: true }, () => {
+        this.onMouseHoverTextureEnter(e, x, y)
+      })
+    } else if (e.button === 2) {
+      this.setState({ rightMouseDown: true }, () => {
+        this.onMouseHoverTextureEnter(e, x, y)
+      })
+    }
   }
   onPlaceCharacter() {
     this.props.setSelectedEditTexture(null)
   }
-  onMouseUp() {
-    this.setState({ mouseDown: false })
+  onMouseUp(e) {
+    this.setState({ leftMouseDown: false, rightMouseDown: false })
   }
   handleHoverWhilePlacingCharacter(characterType, x, y) {
     if (characterType === TEXTURES.CHICKEN_IDLE) {
@@ -162,7 +169,8 @@ export class Grid extends Component {
     const { selectedEditTexture, editing, followCursor, textureSize } = this.props
     const {
       texturesMap,
-      mouseDown,
+      leftMouseDown,
+      rightMouseDown,
       edits,
       overLayMap,
       xOffset,
@@ -171,7 +179,6 @@ export class Grid extends Component {
       gridHeight
     } = this.state
     let index = y * gridWidth + x
-
     let side = isSide(x, y, gridWidth, gridHeight)
     if (e.type === "touchmove") {
       let touchX = Math.floor((e.touches[0].pageX - xOffset) / textureSize)
@@ -190,26 +197,30 @@ export class Grid extends Component {
           e.target.parentElement.style.border = CONFIG.EDITING_BORDER
         }
         if (selectedEditTexture === TEXTURES.HEALTH_PACK) {
-          if (mouseDown) {
+          if (leftMouseDown || rightMouseDown) {
             let newOverLayMap = overLayMap.slice()
             newOverLayMap[index] =
-              overLayMap[index] === TEXTURES.HEALTH_PACK
+              overLayMap[index] === TEXTURES.HEALTH_PACK || rightMouseDown
                 ? TEXTURES.TRANSPARENT
                 : selectedEditTexture
             this.setState({
               overLayMap: newOverLayMap,
               mouseOverX: x,
               mouseOverY: y,
-              mouseDown: false,
+              leftMouseDown: false,
+              rightMouseDown: false,
               edits: [...edits, { type: CONSTANTS.OVERLAY, texture: overLayMap[index], x, y }]
             })
           } else {
             this.setState({ mouseOverX: x, mouseOverY: y })
           }
-        } else if (texturesMap[index] !== selectedEditTexture) {
-          if (mouseDown) {
+        } else if (
+          texturesMap[index] !== selectedEditTexture ||
+          (rightMouseDown && texturesMap[index] !== TEXTURES.FLOOR)
+        ) {
+          if (leftMouseDown || rightMouseDown) {
             let newTexturesMap = texturesMap.slice()
-            newTexturesMap[index] = selectedEditTexture
+            newTexturesMap[index] = rightMouseDown ? TEXTURES.FLOOR : selectedEditTexture
             this.setState({
               texturesMap: newTexturesMap,
               mouseOverX: x,
@@ -352,6 +363,9 @@ export class Grid extends Component {
     window.addEventListener("resize", e =>
       this.initializeGridWithTextureSize(this.props.textureSize)
     )
+    this.container.oncontextmenu = function() {
+      return false
+    }
   }
   onCharacterFinishMove(characterType, action) {
     const { overLayMap, currentPlayerLocation, currentChickenLocation, texturesMap } = this.state
@@ -427,6 +441,7 @@ export class Grid extends Component {
       showModal,
       modalMessage,
       currentPlayerHealth,
+      rightMouseDown,
       editorExpanded
     } = this.state
     const {
@@ -523,7 +538,9 @@ export class Grid extends Component {
               yOffset={yOffset}
               texture={
                 isBeingEdited && !isEditingOverLay
-                  ? selectedEditTexture
+                  ? rightMouseDown
+                    ? TEXTURES.FLOOR
+                    : selectedEditTexture
                   : side
                   ? textureToRenderIfSide
                   : texture
