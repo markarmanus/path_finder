@@ -202,7 +202,7 @@ const chickenSpeed = (props, smallScreen) => {
       value={props.chickenSpeed}
       min={0}
       max={4}
-      disabled={true}
+      disabled={false}
       step={1}
       tooltipPlacement={"top"}
     />

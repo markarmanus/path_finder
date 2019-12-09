@@ -30,6 +30,34 @@ export class Character extends Component {
       this.setState({ currentTexture: TEXTURES[typeUpperCase + "_IDLE"] })
     }
   }
+  shouldComponentUpdate(nextProps, nextState) {
+    const {
+      xOffset,
+      yOffset,
+      textureSize,
+      movementSpeed,
+      inProgress,
+      paused,
+      currentHealth,
+      initialCharacterLocation,
+      maxHealth,
+      renderOnScreen
+    } = this.props
+    return (
+      nextProps.xOffset !== xOffset ||
+      nextProps.yOffset !== yOffset ||
+      nextProps.textureSize !== textureSize ||
+      nextProps.movementSpeed !== movementSpeed ||
+      nextProps.inProgress !== inProgress ||
+      nextProps.paused !== paused ||
+      nextProps.currentHealth !== currentHealth ||
+      nextProps.maxHealth !== maxHealth ||
+      nextProps.renderOnScreen !== renderOnScreen ||
+      nextProps.initialCharacterLocation !== initialCharacterLocation ||
+      true ||
+      nextState !== this.state
+    )
+  }
   componentDidMount() {
     this.props.onRef(this)
   }
@@ -57,7 +85,7 @@ export class Character extends Component {
         : direction[1] === 1 && direction[0] === 0
         ? TEXTURES[typeUpperCase + "_DOWN"]
         : TEXTURES[typeUpperCase + "_RUNNING"]
-    this.setState({ currentTexture: texture })
+    if (this.state.currentTexture !== texture) this.setState({ currentTexture: texture })
   }
   setCorrectDirection(entity, direction) {
     if (entity !== null) {
@@ -76,7 +104,8 @@ export class Character extends Component {
     let remainder = this.props.textureSize % this.props.movementSpeed
 
     let counter = 0
-    this.setState({ currentMovementSpeed: this.props.movementSpeed })
+    if (this.state.currentMovementSpeed !== this.props.movementSpeed)
+      this.setState({ currentMovementSpeed: this.props.movementSpeed })
     var id = setInterval(frame.bind(this), 0)
     function frame() {
       if (counter === stepsCount || !this.props.inProgress) {

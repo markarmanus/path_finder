@@ -376,22 +376,17 @@ export class Grid extends Component {
     }
     if (
       currentPlayerLocation[0] === currentChickenLocation[0] &&
-      currentPlayerLocation[1] === currentChickenLocation[1]
+      currentPlayerLocation[1] === currentChickenLocation[1] &&
+      !this.props.followCursor
     ) {
       if (this.props.chickenSpeed === 0) {
         this.props.onFinishGame()
         this.props.onClickRestart()
-      } else if (characterType === CONSTANTS.PLAYER && !this.props.followCursor) {
-        this.setState({ finishAfterNextAnimation: true })
+      } else if (characterType === CONSTANTS.PLAYER) {
+        // this.setState({ finishAfterNextAnimation: true })
+        this.props.onFinishGame()
+        this.props.onClickRestart()
       }
-    }
-    if (
-      currentPlayerLocation[0] === currentChickenLocation[0] &&
-      currentPlayerLocation[1] === currentChickenLocation[1] &&
-      characterType === CONSTANTS.PLAYER &&
-      !this.props.followCursor
-    ) {
-      this.setState({ finishAfterNextAnimation: true })
     }
   }
   onSelectCustomLevel(levelData) {
@@ -560,6 +555,22 @@ export class Grid extends Component {
         <Character
           xOffset={xOffset}
           yOffset={yOffset}
+          onRef={ref => (this.chicken = ref)}
+          onPlaceCharacter={this.onPlaceCharacter}
+          initialCharacterLocation={initialChickenLocation}
+          textureSize={textureSize}
+          movementSpeed={chickenSpeed}
+          onCharacterFinishMove={this.onCharacterFinishMove}
+          inProgress={inProgress}
+          paused={paused}
+          getNextAction={this.getNextCharacterAction}
+          renderOnScreen={!followCursor}
+          type={CONSTANTS.CHICKEN}
+          zIndex={4}
+        ></Character>
+        <Character
+          xOffset={xOffset}
+          yOffset={yOffset}
           onRef={ref => (this.player = ref)}
           onPlaceCharacter={this.onPlaceCharacter}
           initialCharacterLocation={initialPlayerLocation}
@@ -575,22 +586,6 @@ export class Grid extends Component {
           healthBar={true}
           type={CONSTANTS.PLAYER}
           zIndex={5}
-        ></Character>
-        <Character
-          xOffset={xOffset}
-          yOffset={yOffset}
-          onRef={ref => (this.chicken = ref)}
-          onPlaceCharacter={this.onPlaceCharacter}
-          initialCharacterLocation={initialChickenLocation}
-          textureSize={textureSize}
-          movementSpeed={chickenSpeed}
-          onCharacterFinishMove={this.onCharacterFinishMove}
-          inProgress={inProgress}
-          paused={paused}
-          getNextAction={this.getNextCharacterAction}
-          renderOnScreen={!followCursor}
-          type={CONSTANTS.CHICKEN}
-          zIndex={4}
         ></Character>
       </Container>
     )
