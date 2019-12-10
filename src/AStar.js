@@ -249,7 +249,6 @@ const getNextChickenAction = (actions, state, props) => {
   }
 }
 const getNextAction = (state, props, characterType) => {
-  console.log(state.currentPlayerLocation, state.currentChickenLocation, characterType)
   let actions = [
     [0, 1],
     [0, -1],

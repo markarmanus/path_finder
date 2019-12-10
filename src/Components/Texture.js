@@ -1,7 +1,15 @@
 import React, { Component } from "react"
 import { TEXTURE_DATA } from "../Constants/Textures"
 import styled, { keyframes } from "styled-components"
+const getTextureSrc = src => {
+  if (Array.isArray(src)) {
+    let random = Math.floor(Math.random() * src.length)
 
+    return src[random]
+  } else {
+    return src
+  }
+}
 const getAnimation = numberOfSprites => {
   const translationTo = ((numberOfSprites - 1) / numberOfSprites) * 100
   const transform = keyframes`
@@ -18,7 +26,7 @@ const getAnimation = numberOfSprites => {
 const Sprite = styled.div`
   width: ${props => props.textureData.numberOfSprites * 100}%;
   height: 100%;
-  background-image: url(${props => props.textureData.src});
+  background-image: url(${props => getTextureSrc(props.textureData.src)});
   background-size: 100%, 100%;
   background-repeat: ${props => (props.textureData.animated ? "no-repeat" : "unset")};
   animation: ${props => getAnimation(props.textureData.numberOfSprites)}

@@ -86,6 +86,13 @@ export class App extends Component {
   }
   componentDidMount() {
     message.info("Click on The Help Icon At Bottom To Help You Start!")
+    window.addEventListener("keydown", e => {
+      if (e.key.toLowerCase() === " ") {
+        if (!this.state.inProgress && this.state.ready) this.onClickStart()
+        else if (this.state.inProgress && this.state.paused) this.onClickResume()
+        else if (this.state.inProgress && !this.state.paused) this.onClickPause()
+      }
+    })
   }
   setAllowDiagonalActions(value) {
     this.setState({ allowDiagonalActions: value })

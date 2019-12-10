@@ -81,13 +81,15 @@ export const TEXTURE_DATA = {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "Rock.png"
+    src: "Rock.png",
+    icon: "Rock_Icon.png"
   },
   12: {
-    animationSpeed: "0.3s",
+    animationSpeed: "1s",
     animated: true,
-    numberOfSprites: 4,
-    src: "Character_Right.png"
+    numberOfSprites: 3,
+    src: "Health_Pack.png",
+    icon: "Health_Icon.png"
   },
   13: {
     animationSpeed: null,
@@ -99,54 +101,55 @@ export const TEXTURE_DATA = {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "FloorBottom.png"
+    src: "Floor_Bottom.png"
   },
   15: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "FloorTop.png"
+    src: "Floor_Top.png"
   },
   16: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "FloorRight.png"
+    src: "Floor_Right.png"
   },
   17: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "FloorLeft.png"
+    src: "Floor_Left.png"
   },
   18: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "FloorTopLeft.png"
+    src: "Floor_Top_Left.png"
   },
   19: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "FloorTopRight.png"
+    src: "Floor_Top_Right.png"
   },
   20: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "FloorBottomRight.png"
+    src: "Floor_Bottom_Right.png"
   },
   21: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "FloorBottomLeft.png"
+    src: "Floor_Bottom_Left.png"
   },
   22: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "Floor.png"
+    src: ["Floor_1.png", "Floor_2.png", "Floor_3.png", "Floor_1.png"],
+    icon: "Floor_1.png"
   }
 }

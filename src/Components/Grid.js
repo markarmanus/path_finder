@@ -15,7 +15,7 @@ const Container = styled.div`
   flex: 1;
   position: relative;
   // background-image: url("background2.png");
-  background: #f6d688;
+  background: #81ba44;
 `
 const EditorDoneButton = styled(Button)`
   border-radius: 20px !important;
@@ -484,7 +484,7 @@ export class Grid extends Component {
           ></EditorArrow>
           <Image
             onClick={() => this.onClickTexture(22)}
-            src={TEXTURE_DATA[TEXTURES.FLOOR].src}
+            src={TEXTURE_DATA[TEXTURES.FLOOR].icon}
           ></Image>
           <TextureLabel>Floor</TextureLabel>
           <Image
@@ -494,12 +494,12 @@ export class Grid extends Component {
           <TextureLabel>Fire</TextureLabel>
           <Image
             onClick={() => this.onClickTexture(TEXTURES.WALL)}
-            src={TEXTURE_DATA[TEXTURES.WALL].src}
+            src={TEXTURE_DATA[TEXTURES.WALL].icon}
           ></Image>
           <TextureLabel>Rock</TextureLabel>
           <Image
             onClick={() => this.onClickTexture(TEXTURES.HEALTH_PACK)}
-            src={TEXTURE_DATA[TEXTURES.WALL].src}
+            src={TEXTURE_DATA[TEXTURES.HEALTH_PACK].icon}
           ></Image>
           <TextureLabel>Health</TextureLabel>
           <EditorDoneButton
