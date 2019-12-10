@@ -22,9 +22,13 @@ const Container = styled.div`
     font-size: 11px;
   }
 `
+const TutorialDescription = styled(Typography.Text)`
+  font-size: 15px;
+`
 const TutorialImage = styled.img`
   width: 100%;
-  height: 200px;
+  height: 230px;
+  object-fit: cover;
 `
 const TutorialButtonContainer = styled.div`
   position: absolute;
@@ -223,7 +227,10 @@ const getPlayButton = props => {
         disabled={!props.ready}
         type={"link"}
         fontSize={30}
-        onClick={() => (props.paused ? props.onClickResume() : props.onClickPause())}
+        onClick={() => {
+          if (props.followCursor) props.setEditing(false)
+          props.paused ? props.onClickResume() : props.onClickPause()
+        }}
         ghost={true}
         margin={"0 4px 0 15px"}
         icon={props.paused ? "play-circle" : "pause-circle"}
@@ -245,7 +252,10 @@ const getPlayButton = props => {
       ghost={true}
       fontSize={35}
       margin={"0 15px 0 15px"}
-      onClick={() => props.onClickStart()}
+      onClick={() => {
+        props.generateLink()
+        props.onClickStart()
+      }}
       icon={"play-circle"}
     ></PlayButton>
   )
@@ -287,6 +297,7 @@ export default class Footer extends Component {
           footer={null}
           visible={showTutorial}
           title={null}
+          bodyStyle={{ padding: "10px" }}
         >
           <Typography.Title style={{ textAlign: "center" }} level={4}>
             Run Chicken!!
@@ -310,31 +321,72 @@ export default class Footer extends Component {
             ></Button>
           </TutorialButtonContainer>
 
-          <Carousel ref={node => (this.carousel = node)}>
-            <TutorialImage
-              style={{ width: "100%", height: "200px" }}
-              src="background.png"
-            ></TutorialImage>
-            <TutorialImage
-              style={{ width: "100%", height: "200px" }}
-              src="background.png"
-            ></TutorialImage>
-
-            <TutorialImage
-              style={{ width: "100%", height: "200px" }}
-              src="background.png"
-            ></TutorialImage>
+          <Carousel dots={false} ref={node => (this.carousel = node)}>
             <div>
-              <TutorialImage
-                style={{ width: "100%", height: "200px" }}
-                src="background.png"
-              ></TutorialImage>
-              <Typography.Text>
-                This is the best way to do this i dont htinwdadwdaThis is the best way to do this i
-                dont htinwdadwdaThis is the best way to do this i dont htinwdadwdaThis is the best
-                way to do this i dont htinwdadwdaThis is the best way to do this i dont
-                htinwdadwdaThis is the best way to do this i dont htinwdadwda
-              </Typography.Text>
+              <TutorialImage src="Grid.PNG"></TutorialImage>
+              <TutorialDescription>
+                <br></br>
+                The goal of the player is to catch the chicken. He uses A* to update the optimal
+                path in realtime.
+                <br></br>
+                <br></br>
+                The chicken is invincible to the camp fires, but the player has a health bar and he
+                needs to be smart if he wants to catch that chicken.
+              </TutorialDescription>
+            </div>
+            <div>
+              <TutorialImage src="Editor.PNG"></TutorialImage>
+              <TutorialDescription>
+                <br></br>
+                You can edit the map while the game is running through the editor on the left of the
+                screen, simply click on the texture you wont to add and drag your mouse to draw.
+                <br></br>
+                <br></br>
+                <br></br>
+                <br></br>
+                <br></br>
+                <br></br>
+                <b>Hint</b>: You can use right click to delete anything on the map.
+              </TutorialDescription>
+            </div>
+            <div>
+              <TutorialImage src="Options.PNG"></TutorialImage>
+              <TutorialDescription>
+                <br></br>
+                These are the options that control how the AI behaves, you can control the speed of
+                the either the chicken or the player and how much health the player has.
+              </TutorialDescription>
+            </div>
+            <div>
+              <TutorialImage src="ControlPanel.PNG"></TutorialImage>
+              <TutorialDescription>
+                <br></br>
+                This is where you control the game.
+                <br></br>
+                <br></br>
+                <b>Place Chicken/Player</b>: Set the starting position of the chicken/player.
+                <br></br> <b>Undo Edit</b>: Undo your last edit to the map.
+                <br></br>
+                <b>Share Map</b>: Share the current map with a friend through a link.
+                <br></br> <b>Follow Cursor</b>: Replace the chicken with your mouse, and the player
+                will follow it in real time.
+                <br></br>
+                <br></br>
+                <b>Hint</b>: You can use the space bar to start, resume and pause the game.
+              </TutorialDescription>
+            </div>
+            <div>
+              <TutorialImage src="MapOptions.PNG"></TutorialImage>
+              <TutorialDescription>
+                <br></br>
+                This is where you control the map options
+                <br></br>
+                <br></br> <b>Map Scale</b>: How big is the grid.
+                <br></br> <b>Pre Made Levels</b>: Load any pre-made levels created by the
+                developers.
+                <br></br> <b>search Priority</b>: Weather the player cares more about health or
+                speed.
+              </TutorialDescription>
             </div>
           </Carousel>
           <div></div>
@@ -381,7 +433,14 @@ export default class Footer extends Component {
         <Center>
           <FlexDivCenter>
             <Tooltip placement="top" title="The player Will Follow The Mouse Cursor on The Screen">
-              <StyledButton onClick={() => props.enableFollowCursor()} style={{ margin: "0" }}>
+              <StyledButton
+                onClick={() => {
+                  props.setEditing(false)
+                  if (props.followCursor) props.onClickRestart()
+                  else props.enableFollowCursor()
+                }}
+                style={{ margin: "0" }}
+              >
                 Follow Cursor
               </StyledButton>
             </Tooltip>

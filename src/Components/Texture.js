@@ -34,6 +34,9 @@ const Sprite = styled.div`
     steps(${props => props.textureData.numberOfSprites - 1})
     ${props => (props.textureData.animated ? "infinite" : 0)};
   position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   user-select: none;
 
   left: 0;
@@ -113,15 +116,19 @@ export class Texture extends Component {
           </ProgressBarUnder>
         ) : null}
         <Sprite
-          textureData={textureData}
-          onMouseDown={onMouseDown}
+          onMouseOut={onMouseHoverTextureLeave}
           onMouseUp={onMouseUp}
-          onMouseEnter={onMouseHoverTextureEnter}
-          onMouseLeave={onMouseHoverTextureLeave}
-          onTouchMove={onMouseHoverTextureEnter}
-          onTouchEnd={onMouseUp}
-          onTouchStart={onMouseDown}
-        ></Sprite>
+          textureData={textureData}
+        >
+          <div
+            style={{ width: "85%", height: "85%" }}
+            onMouseDown={onMouseDown}
+            onMouseOver={onMouseHoverTextureEnter}
+            onTouchMove={onMouseHoverTextureEnter}
+            onTouchEnd={onMouseUp}
+            onTouchStart={onMouseDown}
+          ></div>
+        </Sprite>
       </div>
     )
   }

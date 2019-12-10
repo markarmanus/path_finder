@@ -14,7 +14,6 @@ import { isSide, calculateMaxTextureSize, calculateMinTextureSize } from "../Hel
 const Container = styled.div`
   flex: 1;
   position: relative;
-  // background-image: url("background2.png");
   background: #81ba44;
 `
 const EditorDoneButton = styled(Button)`
@@ -175,6 +174,8 @@ export class Grid extends Component {
       overLayMap,
       xOffset,
       yOffset,
+      mouseOverX,
+      mouseOverY,
       gridWidth,
       gridHeight
     } = this.state
@@ -194,7 +195,7 @@ export class Grid extends Component {
         this.handleHoverWhilePlacingCharacter(selectedEditTexture, x, y)
       } else if (editing) {
         if (e.target !== null && !("ontouchstart" in window)) {
-          e.target.parentElement.style.border = CONFIG.EDITING_BORDER
+          e.target.parentElement.parentElement.style.border = CONFIG.EDITING_BORDER
         }
         if (selectedEditTexture === TEXTURES.HEALTH_PACK) {
           if (leftMouseDown || rightMouseDown) {
@@ -211,7 +212,7 @@ export class Grid extends Component {
               rightMouseDown: false,
               edits: [...edits, { type: CONSTANTS.OVERLAY, texture: overLayMap[index], x, y }]
             })
-          } else {
+          } else if (mouseOverX !== x || mouseOverY !== y) {
             this.setState({ mouseOverX: x, mouseOverY: y })
           }
         } else if (
@@ -227,7 +228,7 @@ export class Grid extends Component {
               mouseOverY: y,
               edits: [...edits, { type: CONSTANTS.TEXTURE, texture: texturesMap[index], x, y }]
             })
-          } else {
+          } else if (mouseOverX !== x || mouseOverY !== y) {
             this.setState({ mouseOverX: x, mouseOverY: y })
           }
         }
@@ -238,8 +239,9 @@ export class Grid extends Component {
   }
   onMouseHoverTextureLeave(e) {
     if (this.props.editing) {
-      this.setState({ mouseOverX: null, mouseOverY: null })
-      e.target.parentElement.style.border = "0"
+      if (this.state.mouseOverX !== null || this.state.mouseOverY !== null)
+        this.setState({ mouseOverX: null, mouseOverY: null })
+      e.target.parentElement.parentElement.style.border = "0"
     }
   }
   componentDidUpdate(prevProps) {
@@ -360,9 +362,10 @@ export class Grid extends Component {
       this.initializeGridWithTextureSize(this.props.textureSize)
     }
     this.props.onRef(this)
-    window.addEventListener("resize", e =>
+    window.addEventListener("resize", e => {
+      this.props.onClickRestart()
       this.initializeGridWithTextureSize(this.props.textureSize)
-    )
+    })
     this.container.oncontextmenu = function() {
       return false
     }
@@ -412,6 +415,7 @@ export class Grid extends Component {
     )
   }
   onClickTexture(texture) {
+    if (this.props.followCursor) this.props.onClickPause()
     this.props.setEditing(true)
     this.props.setSelectedEditTexture(texture)
   }
@@ -442,6 +446,9 @@ export class Grid extends Component {
       modalMessage,
       currentPlayerHealth,
       rightMouseDown,
+      currentPlayerLocation,
+      currentChickenLocation,
+      leftMouseDown,
       editorExpanded
     } = this.state
     const {
@@ -458,7 +465,10 @@ export class Grid extends Component {
     } = this.props
     let isEditingOverLay = selectedEditTexture === TEXTURES.HEALTH_PACK
     return (
-      <Container onMouseLeave={this.onMouseUp} ref={el => (this.container = el)}>
+      <Container
+        onMouseLeave={() => (leftMouseDown || rightMouseDown ? this.onMouseUp : null)}
+        ref={el => (this.container = el)}
+      >
         <Modal
           closable={false}
           footer={[
@@ -581,6 +591,7 @@ export class Grid extends Component {
           inProgress={inProgress}
           paused={paused}
           getNextAction={this.getNextCharacterAction}
+          otherCharacterLocation={currentPlayerLocation}
           renderOnScreen={!followCursor}
           type={CONSTANTS.CHICKEN}
           zIndex={4}
@@ -595,6 +606,7 @@ export class Grid extends Component {
           movementSpeed={playerSpeed}
           inProgress={inProgress}
           paused={paused}
+          otherCharacterLocation={currentChickenLocation}
           getNextAction={this.getNextCharacterAction}
           onCharacterFinishMove={this.onCharacterFinishMove}
           currentHealth={currentPlayerHealth}

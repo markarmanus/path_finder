@@ -101,49 +101,49 @@ export const TEXTURE_DATA = {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "Floor_Bottom.png"
+    src: "Floor_Bottom_1.png"
   },
   15: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "Floor_Top.png"
+    src: "Floor_Top_1.png"
   },
   16: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "Floor_Right.png"
+    src: "Floor_Right_1.png"
   },
   17: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "Floor_Left.png"
+    src: "Floor_Left_1.png"
   },
   18: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "Floor_Top_Left.png"
+    src: "Floor_Top_Left_1.png"
   },
   19: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "Floor_Top_Right.png"
+    src: "Floor_Top_Right_1.png"
   },
   20: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "Floor_Bottom_Right.png"
+    src: "Floor_Bottom_Right_1.png"
   },
   21: {
     animationSpeed: null,
     animated: false,
     numberOfSprites: 1,
-    src: "Floor_Bottom_Left.png"
+    src: "Floor_Bottom_Left_1.png"
   },
   22: {
     animationSpeed: null,

@@ -40,6 +40,7 @@ export class Character extends Component {
       paused,
       currentHealth,
       initialCharacterLocation,
+      otherCharacterLocation,
       maxHealth,
       renderOnScreen
     } = this.props
@@ -54,7 +55,7 @@ export class Character extends Component {
       nextProps.maxHealth !== maxHealth ||
       nextProps.renderOnScreen !== renderOnScreen ||
       nextProps.initialCharacterLocation !== initialCharacterLocation ||
-      true ||
+      nextProps.otherCharacterLocation !== otherCharacterLocation ||
       nextState !== this.state
     )
   }
