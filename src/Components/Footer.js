@@ -552,7 +552,7 @@ export default class Footer extends Component {
               onClick={() => this.setState({ showTutorial: true })}
             ></StyledGitButton>
             <StyledGitButton
-              href={"https://github.com/markarmanus/path_finder"}
+              href={"https://github.com/markarmanus/runChicken"}
               target={"_blank"}
               shape={"circle"}
               ghost={true}
