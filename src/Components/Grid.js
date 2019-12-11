@@ -4,7 +4,7 @@ import Texture from "./Texture"
 import { TEXTURES, TEXTURE_DATA } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
 import Character from "./Character"
-import getNextAction from "../AStar.js"
+import getNextAction from "../AI.js"
 import { Modal, Button, Typography } from "antd"
 
 import { CONSTANTS } from "../Constants/Constants"
