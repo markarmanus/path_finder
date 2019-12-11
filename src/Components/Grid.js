@@ -5,7 +5,7 @@ import { TEXTURES, TEXTURE_DATA } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
 import Character from "./Character"
 import getNextAction from "../AI.js"
-import { Modal, Button, Typography } from "antd"
+import { Modal, Button, Typography, message } from "antd"
 
 import { CONSTANTS } from "../Constants/Constants"
 import queryString from "query-string"
@@ -13,7 +13,9 @@ import {
   isSide,
   calculateMaxTextureSize,
   calculateMinTextureSize,
-  isTouchDevice
+  isTouchDevice,
+  getTextureSizeForMap,
+  calculateBestTextureSize
 } from "../HelperFunctions"
 
 const Container = styled.div`
@@ -68,7 +70,6 @@ export class Grid extends Component {
       showModal: false,
       gridWidth: 0,
       editorExpanded: true,
-      finishAfterNextAnimation: false,
       gridHeight: 0,
       xOffset: 0,
       yOffset: 0,
@@ -149,10 +150,9 @@ export class Grid extends Component {
       searchPriority: this.props.searchPriority,
       allowDiagonalActions: this.props.allowDiagonalActions,
       initialOverLayMap: this.state.overLayMap,
-      minHeight: window.screen.height,
-      minWidth: window.screen.width,
+      gridWidth: this.state.gridWidth,
+      gridHeight: this.state.gridHeight,
       chickenSpeed: this.props.chickenSpeed,
-      textureSize: this.props.textureSize,
       firstRenderPlayerLocation: this.state.initialPlayerLocation,
       firstRenderChickenLocation: this.state.initialChickenLocation
     }
@@ -262,7 +262,7 @@ export class Grid extends Component {
     }
   }
   componentDidUpdate(prevProps) {
-    if (prevProps.textureSize !== this.props.textureSize) {
+    if (prevProps.textureSize !== this.props.textureSize && this.props.reRenderGrid) {
       this.initializeGridWithTextureSize(this.props.textureSize)
     }
     if (prevProps.playerMaxHealth !== this.props.playerMaxHealth) {
@@ -270,32 +270,41 @@ export class Grid extends Component {
     }
   }
 
-  initializeGridWithTextureSize(textureSize, tMap, oMap, useURL) {
+  initializeGridFromData(data) {
+    if (this.container === null) return
+    let yOffset = (this.container.offsetHeight - data.gridHeight * this.props.textureSize) / 2
+    let xOffset = (this.container.offsetWidth - data.gridWidth * this.props.textureSize) / 2
+    let playerLocationFromURL = data.firstRenderPlayerLocation
+    let chickenLocationFromURL = data.firstRenderChickenLocation
+    let playerLocation = playerLocationFromURL !== undefined ? playerLocationFromURL : [1, 1]
+    let chickenLocation =
+      chickenLocationFromURL !== undefined ? chickenLocationFromURL : [data.gridWidth - 2, 1]
+    this.setState({
+      texturesMap: data.initialTexturesMap,
+      overLayMap: data.initialOverLayMap,
+      gridWidth: data.gridWidth,
+      gridHeight: data.gridHeight,
+      xOffset,
+      yOffset,
+      initialPlayerLocation: playerLocation,
+      initialChickenLocation: chickenLocation,
+      currentPlayerLocation: playerLocation,
+      currentChickenLocation: chickenLocation,
+      currentPlayerHealth: this.props.playerMaxHealth,
+      currentChickenHealth: this.props.chickenMaxHealth,
+      edits: []
+    })
+    this.props.envIsReady()
+  }
+  initializeGridWithTextureSize(textureSize) {
     let gridWidth = Math.floor(this.container.offsetWidth / textureSize)
     let gridHeight = Math.floor(this.container.offsetHeight / textureSize)
     let xOffset = (this.container.offsetWidth % textureSize) / 2
     let yOffset = (this.container.offsetHeight % textureSize) / 2
-    let playerLocation =
-      useURL !== undefined && this.props.firstRenderPlayerLocation !== null
-        ? this.props.firstRenderPlayerLocation
-        : [1, 1]
-    let chickenLocation =
-      useURL !== undefined && this.props.firstRenderChickenLocation !== null
-        ? this.props.firstRenderChickenLocation
-        : [gridWidth - 2, 1]
-    let texturesMap =
-      tMap === undefined
-        ? new Array(gridWidth * gridHeight).fill(TEXTURES.FLOOR)
-        : new Array(gridWidth * gridHeight).fill(TEXTURES.FLOOR).map((value, index) => {
-            return tMap[index] !== undefined ? tMap[index] : value
-          })
-    let overLayMap =
-      oMap === undefined
-        ? new Array(gridWidth * gridHeight).fill(TEXTURES.TRANSPARENT)
-        : new Array(gridWidth * gridHeight).fill(TEXTURES.TRANSPARENT).map((value, index) => {
-            return oMap[index] !== undefined ? oMap[index] : value
-          })
-
+    let playerLocation = [1, 1]
+    let chickenLocation = [gridWidth - 2, 1]
+    let texturesMap = new Array(gridWidth * gridHeight).fill(TEXTURES.FLOOR)
+    let overLayMap = new Array(gridWidth * gridHeight).fill(TEXTURES.TRANSPARENT)
     this.setState({
       texturesMap: texturesMap,
       overLayMap: overLayMap,
@@ -351,33 +360,49 @@ export class Grid extends Component {
     }
   }
   componentDidMount() {
-    let validTextureSize =
-      this.props.textureSize >= calculateMinTextureSize(window) &&
-      this.props.textureSize <= calculateMaxTextureSize(window)
-    let mapCanFit =
-      this.props.URLParams.minHeight <= window.screen.height &&
-      this.props.URLParams.minWidth <= window.screen.width
-    if (validTextureSize && mapCanFit) {
-      if (this.props.initialTexturesMap.length > 0 && this.props.initialOverLayMap.length > 0) {
-        this.initializeGridWithTextureSize(
-          this.props.textureSize,
-          this.props.initialTexturesMap,
-          this.props.initialOverLayMap,
-          true
+    let rendered = false
+    if (this.props.URLParams !== null) {
+      if (
+        this.props.URLParams.initialTexturesMap.length > 0 &&
+        this.props.URLParams.initialOverLayMap.length > 0
+      ) {
+        const textureSizeForURLMap = getTextureSizeForMap(
+          this.props.URLParams.gridWidth,
+          this.props.URLParams.gridHeight,
+          this.container
         )
+
+        if (
+          textureSizeForURLMap <= calculateMaxTextureSize(window) &&
+          textureSizeForURLMap >= calculateMinTextureSize(window)
+        ) {
+          rendered = true
+          this.props.setTextureSize(textureSizeForURLMap, false)
+          setTimeout(() => {
+            this.initializeGridFromData(this.props.URLParams)
+          }, 0)
+        } else {
+          this.setState({
+            showModal: true,
+            modalMessage:
+              "We could not load the map from the link, the map was created on a screen much different than the one you are using currently. Please Try again with a different device."
+          })
+        }
       } else {
-        this.initializeGridWithTextureSize(this.props.textureSize)
-      }
-    } else {
-      if (!mapCanFit && this.props.URLParams.initialTexturesMap !== undefined) {
         this.setState({
           showModal: true,
           modalMessage:
-            "We could not load the map from the link, the map was created on a screen bigger than the one you are using currently. Try again using a bigger screen."
+            "We Could Not Load The Map, There Seems to Be Something wrong with the link shared with you."
         })
       }
-      this.initializeGridWithTextureSize(this.props.textureSize)
     }
+    if (!rendered) {
+      this.props.setTextureSize(calculateBestTextureSize(window), false)
+      setTimeout(() => {
+        this.initializeGridWithTextureSize(this.props.textureSize)
+      }, 0)
+    }
+
     this.props.onRef(this)
     window.addEventListener("resize", e => {
       this.props.onClickRestart()
@@ -404,10 +429,7 @@ export class Grid extends Component {
       })
       this.setCharacterCurrentHealth(characterType, this.props.playerMaxHealth)
     }
-    if (this.state.finishAfterNextAnimation) {
-      this.props.onFinishGame()
-      this.props.onClickRestart()
-    }
+
     if (
       currentPlayerLocation[0] === currentChickenLocation[0] &&
       currentPlayerLocation[1] === currentChickenLocation[1] &&
@@ -417,19 +439,29 @@ export class Grid extends Component {
         this.props.onFinishGame()
         this.props.onClickRestart()
       } else if (characterType === CONSTANTS.PLAYER) {
-        // this.setState({ finishAfterNextAnimation: true })
         this.props.onFinishGame()
         this.props.onClickRestart()
       }
     }
   }
   onSelectCustomLevel(levelData) {
-    this.initializeGridWithTextureSize(
-      levelData.textureSize,
-      levelData.initialTexturesMap,
-      levelData.initialOverLayMap,
-      true
+    const textureSizeForLevel = getTextureSizeForMap(
+      levelData.gridWidth,
+      levelData.gridHeight,
+      this.container
     )
+
+    if (
+      textureSizeForLevel <= calculateMaxTextureSize(window) &&
+      textureSizeForLevel >= calculateMinTextureSize(window)
+    ) {
+      this.props.setTextureSize(textureSizeForLevel, false)
+      setTimeout(() => {
+        this.initializeGridFromData(levelData)
+      }, 0)
+    } else {
+      message.error("Your Screen is Not Compatible with this Level!")
+    }
   }
   onClickTexture(texture) {
     if (this.props.followCursor) this.props.onClickPause()
@@ -443,8 +475,7 @@ export class Grid extends Component {
       currentPlayerLocation: this.state.initialPlayerLocation,
       currentChickenLocation: this.state.initialChickenLocation,
       currentPlayerHealth: this.props.playerMaxHealth,
-      currentChickenHealth: this.props.chickenMaxHealth,
-      finishAfterNextAnimation: false
+      currentChickenHealth: this.props.chickenMaxHealth
     })
   }
   render() {

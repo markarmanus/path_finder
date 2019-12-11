@@ -5,7 +5,7 @@ const calculateBestTextureSize = window => {
   const width = window.screen.width
   const lowerValue = height > width ? width : height
 
-  return lowerValue / 10
+  return Math.floor(lowerValue / 10)
 }
 const calculateMaxTextureSize = window => {
   const height = window.screen.height - 300
@@ -34,6 +34,12 @@ const deviceIsTooSmall = window => {
     window.screen.width <= CONFIG.MIN_APPLICATION_WIDTH
   )
 }
+// Calculates the texture size that will fit a certain grid width and height into the passed in container.
+const getTextureSizeForMap = (gridWidth, gridHeight, container) => {
+  let textureSizeBasedOnHeigh = Math.floor(container.offsetHeight / gridHeight)
+  let textureSizeBasedOnWidth = Math.floor(container.offsetWidth / gridWidth)
+  return Math.min(textureSizeBasedOnHeigh, textureSizeBasedOnWidth)
+}
 
 export {
   calculateMinTextureSize,
@@ -41,5 +47,6 @@ export {
   calculateMaxTextureSize,
   isSide,
   deviceIsTooSmall,
+  getTextureSizeForMap,
   isTouchDevice
 }

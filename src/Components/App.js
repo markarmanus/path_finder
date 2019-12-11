@@ -7,7 +7,7 @@ import { TEXTURES } from "../Constants/Textures"
 import queryString from "query-string"
 import { LEVELS } from "../Constants/Levels"
 import { message, Modal } from "antd"
-import { calculateBestTextureSize, deviceIsTooSmall } from "../HelperFunctions"
+import { deviceIsTooSmall } from "../HelperFunctions"
 import "antd/dist/antd.css"
 const MainContainer = styled.div`
   display: flex;
@@ -19,25 +19,18 @@ export class App extends Component {
     super(props)
     let params = this.parseLevelData(this.props.location.search)
     this.state = {
-      textureSize: params.textureSize ? params.textureSize : calculateBestTextureSize(window),
+      textureSize: null,
       selectedEditTexture: null,
       editing: false,
       selectedLevel: CONFIG.DEFAULT_SELECTED_LEVEL,
       inProgress: false,
-      URLParams: params,
+      URLParams: this.props.location.search === "" ? null : params,
       paused: false,
+      reRenderGrid: false,
       ready: false,
       followCursor: false,
       // allowDiagonalActions: params.allowDiagonalActions ? params.allowDiagonalActions : false,
-      initialTexturesMap: params.initialTexturesMap ? params.initialTexturesMap : [],
-      initialOverLayMap: params.initialOverLayMap ? params.initialOverLayMap : [],
       playerSpeed: params.playerSpeed ? params.playerSpeed : CONFIG.DEFAULT_PLAYER_SPEED,
-      firstRenderPlayerLocation: params.firstRenderPlayerLocation
-        ? params.firstRenderPlayerLocation
-        : null,
-      firstRenderChickenLocation: params.firstRenderChickenLocation
-        ? params.firstRenderChickenLocation
-        : null,
       playerMaxHealth: params.playerMaxHealth
         ? params.playerMaxHealth
         : CONFIG.DEFAULT_PLAYER_HEALTH,
@@ -74,15 +67,11 @@ export class App extends Component {
   }
   setSelectedLevel(level) {
     let levelData = this.parseLevelData(LEVELS[level])
-
-    if (levelData.minHeight <= window.screen.height && levelData.minWidth <= window.screen.width) {
-      this.setState({ selectedLevel: level, ...levelData }, () => {
-        this.grid.onSelectCustomLevel(levelData)
-      })
-    } else {
-      message.error("Your Screen is Too Small For This Map!")
-    }
+    this.setState({ selectedLevel: level, ...levelData }, () => {
+      this.grid.onSelectCustomLevel(levelData)
+    })
   }
+
   componentDidMount() {
     if (deviceIsTooSmall(window)) this.setState({ deviceIsTooSmall: true })
     else {
@@ -119,9 +108,11 @@ export class App extends Component {
   onClickUndo() {
     this.grid.undoEdit()
   }
-  setTextureSize(size) {
-    this.setState({ textureSize: size })
-    this.onClickRestart()
+  setTextureSize(size, reRender) {
+    this.setState({ textureSize: size, reRenderGrid: reRender })
+    if (reRender) {
+      this.onClickRestart()
+    }
   }
   envIsReady() {
     this.setState({ ready: true })
@@ -148,7 +139,7 @@ export class App extends Component {
       editing: false,
       followCursor: false
     })
-    this.grid.onClickRestart()
+    if (this.grid !== undefined) this.grid.onClickRestart()
   }
   onClickPause() {
     this.setState({ paused: true })

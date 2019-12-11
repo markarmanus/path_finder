@@ -488,9 +488,9 @@ export default class Footer extends Component {
               <StyledSlider
                 min={minTextureSize}
                 max={maxTextureSize}
-                onChange={props.setTextureSize}
+                onChange={value => props.setTextureSize(value, true)}
                 disabled={props.inProgress}
-                value={props.textureSize}
+                value={props.textureSize !== null ? props.textureSize : 0}
                 tooltipPlacement={"top"}
               />
             </FlexDivCenter>
@@ -522,7 +522,6 @@ export default class Footer extends Component {
                 <Radio.Button value={3}>3</Radio.Button>
                 <Radio.Button value={4}>4</Radio.Button>
                 <Radio.Button value={5}>5</Radio.Button>
-                <Radio.Button value={6}>6</Radio.Button>
               </Radio.Group>
             </FlexDivCenter>
           </Tooltip>
