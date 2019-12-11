@@ -23,5 +23,13 @@ const isSide = (x, y, width, height) => {
   const bottom = y === height - 1
   return bottom || top || right || left
 }
-
-export { calculateMinTextureSize, calculateBestTextureSize, calculateMaxTextureSize, isSide }
+const isTouchDevice = window => {
+  return "ontouchstart" in window
+}
+export {
+  calculateMinTextureSize,
+  calculateBestTextureSize,
+  calculateMaxTextureSize,
+  isSide,
+  isTouchDevice
+}

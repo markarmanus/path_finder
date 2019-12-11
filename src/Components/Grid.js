@@ -9,7 +9,12 @@ import { Modal, Button, Typography } from "antd"
 
 import { CONSTANTS } from "../Constants/Constants"
 import queryString from "query-string"
-import { isSide, calculateMaxTextureSize, calculateMinTextureSize } from "../HelperFunctions"
+import {
+  isSide,
+  calculateMaxTextureSize,
+  calculateMinTextureSize,
+  isTouchDevice
+} from "../HelperFunctions"
 
 const Container = styled.div`
   flex: 1;
@@ -73,8 +78,6 @@ export class Grid extends Component {
       currentChickenLocation: null,
       currentPlayerHealth: props.playerMaxHealth,
       currentChickenHealth: props.chickenMaxHealth,
-      mouseOverX: null,
-      mouseOverY: null,
       leftMouseDown: false,
       rightMouseDown: false
     }
@@ -96,7 +99,7 @@ export class Grid extends Component {
   }
   onMouseDown(e, x, y) {
     e.persist()
-    if (e.button === 0) {
+    if (e.button === 0 || e.type === "touchstart") {
       this.setState({ leftMouseDown: true }, () => {
         this.onMouseHoverTextureEnter(e, x, y)
       })
@@ -164,7 +167,7 @@ export class Grid extends Component {
     )
   }
 
-  onMouseHoverTextureEnter(e, x, y) {
+  onMouseHoverTextureEnter(e, x, y, texture) {
     const { selectedEditTexture, editing, followCursor, textureSize } = this.props
     const {
       texturesMap,
@@ -174,18 +177,20 @@ export class Grid extends Component {
       overLayMap,
       xOffset,
       yOffset,
-      mouseOverX,
-      mouseOverY,
       gridWidth,
       gridHeight
     } = this.state
-    let index = y * gridWidth + x
-    let side = isSide(x, y, gridWidth, gridHeight)
+    let index = 0
+    let side = true
     if (e.type === "touchmove") {
       let touchX = Math.floor((e.touches[0].pageX - xOffset) / textureSize)
       let touchY = Math.floor((e.touches[0].pageY - yOffset) / textureSize)
       if (touchX >= gridWidth || touchY >= gridHeight) return
       index = touchY * gridWidth + touchX
+      side = isSide(touchX, touchY, gridWidth, gridHeight)
+    } else {
+      index = y * gridWidth + x
+      side = isSide(x, y, gridWidth, gridHeight)
     }
     if (!side) {
       if (
@@ -194,53 +199,65 @@ export class Grid extends Component {
       ) {
         this.handleHoverWhilePlacingCharacter(selectedEditTexture, x, y)
       } else if (editing) {
-        if (e.target !== null && !("ontouchstart" in window)) {
+        if (e.target !== null && !isTouchDevice(window)) {
           e.target.parentElement.parentElement.style.border = CONFIG.EDITING_BORDER
         }
-        if (selectedEditTexture === TEXTURES.HEALTH_PACK) {
-          if (leftMouseDown || rightMouseDown) {
-            let newOverLayMap = overLayMap.slice()
-            newOverLayMap[index] =
-              overLayMap[index] === TEXTURES.HEALTH_PACK || rightMouseDown
-                ? TEXTURES.TRANSPARENT
-                : selectedEditTexture
-            this.setState({
-              overLayMap: newOverLayMap,
-              mouseOverX: x,
-              mouseOverY: y,
-              leftMouseDown: false,
-              rightMouseDown: false,
-              edits: [...edits, { type: CONSTANTS.OVERLAY, texture: overLayMap[index], x, y }]
-            })
-          } else if (mouseOverX !== x || mouseOverY !== y) {
-            this.setState({ mouseOverX: x, mouseOverY: y })
-          }
-        } else if (
-          texturesMap[index] !== selectedEditTexture ||
-          (rightMouseDown && texturesMap[index] !== TEXTURES.FLOOR)
-        ) {
-          if (leftMouseDown || rightMouseDown) {
+        if (leftMouseDown) {
+          if (selectedEditTexture === TEXTURES.HEALTH_PACK) {
+            if (overLayMap[index] !== TEXTURES.HEALTH_PACK || e.type === "touchstart") {
+              let newOverLayMap = overLayMap.slice()
+              newOverLayMap[index] =
+                overLayMap[index] === TEXTURES.HEALTH_PACK
+                  ? TEXTURES.TRANSPARENT
+                  : TEXTURES.HEALTH_PACK
+              this.setState({
+                overLayMap: newOverLayMap,
+                leftMouseDown: isTouchDevice(window) ? false : leftMouseDown,
+                edits: [...edits, { type: CONSTANTS.OVERLAY, texture: overLayMap[index], x, y }]
+              })
+            }
+          } else if (texturesMap[index] !== selectedEditTexture) {
             let newTexturesMap = texturesMap.slice()
-            newTexturesMap[index] = rightMouseDown ? TEXTURES.FLOOR : selectedEditTexture
+            newTexturesMap[index] = selectedEditTexture
             this.setState({
               texturesMap: newTexturesMap,
-              mouseOverX: x,
-              mouseOverY: y,
               edits: [...edits, { type: CONSTANTS.TEXTURE, texture: texturesMap[index], x, y }]
             })
-          } else if (mouseOverX !== x || mouseOverY !== y) {
-            this.setState({ mouseOverX: x, mouseOverY: y })
           }
+        } else if (rightMouseDown) {
+          let stateUpdate = {}
+          let editsUpdate = [...edits]
+          let shouldUpdateState = false
+          if (overLayMap[index] !== TEXTURES.TRANSPARENT) {
+            shouldUpdateState = true
+            let newOverLayMap = overLayMap.slice()
+            newOverLayMap[index] = TEXTURES.TRANSPARENT
+            stateUpdate.overLayMap = newOverLayMap
+            editsUpdate.push({ type: CONSTANTS.OVERLAY, texture: overLayMap[index], x, y })
+          }
+          if (texturesMap[index] !== TEXTURES.FLOOR) {
+            shouldUpdateState = true
+            let newTexturesMap = texturesMap.slice()
+            newTexturesMap[index] = TEXTURES.FLOOR
+            stateUpdate.texturesMap = newTexturesMap
+            editsUpdate.push({ type: CONSTANTS.TEXTURE, texture: texturesMap[index], x, y })
+          }
+          if (shouldUpdateState) {
+            stateUpdate.edits = editsUpdate
+
+            this.setState({ ...stateUpdate })
+          }
+        } else {
+          texture.setMouseOver(true)
         }
       } else if (followCursor) {
         this.handleFollowCursor(x, y)
       }
     }
   }
-  onMouseHoverTextureLeave(e) {
+  onMouseHoverTextureLeave(e, texture) {
     if (this.props.editing) {
-      if (this.state.mouseOverX !== null || this.state.mouseOverY !== null)
-        this.setState({ mouseOverX: null, mouseOverY: null })
+      texture.setMouseOver(false)
       e.target.parentElement.parentElement.style.border = "0"
     }
   }
@@ -438,8 +455,6 @@ export class Grid extends Component {
       yOffset,
       texturesMap,
       overLayMap,
-      mouseOverX,
-      mouseOverY,
       initialPlayerLocation,
       initialChickenLocation,
       showModal,
@@ -463,7 +478,6 @@ export class Grid extends Component {
       playerMaxHealth,
       chickenSpeed
     } = this.props
-    let isEditingOverLay = selectedEditTexture === TEXTURES.HEALTH_PACK
     return (
       <Container
         onMouseLeave={() => (leftMouseDown || rightMouseDown ? this.onMouseUp : null)}
@@ -525,59 +539,51 @@ export class Grid extends Component {
         {texturesMap.map((texture, index) => {
           const x = index % gridWidth
           const y = Math.floor(index / gridWidth)
+          const overLayTexture = overLayMap[index]
           const left = x === 0
           const right = x === gridWidth - 1
           const top = y === 0
           const bottom = y === gridHeight - 1
-          let side = isSide(x, y, gridWidth, gridHeight)
+          let side = bottom || top || right || left
           let floorTexture = "FLOOR"
-          if (top) floorTexture += "_TOP"
-          if (bottom) floorTexture += "_BOTTOM"
-          if (left) floorTexture += "_LEFT"
-          if (right) floorTexture += "_RIGHT"
-          let textureToRenderIfSide = TEXTURES[floorTexture]
-          let isBeingEdited = editing && mouseOverX === x && mouseOverY === y
-          return (
+          let textureToRenderIfSide = "FLOOR"
+          if (side) {
+            if (top) floorTexture += "_TOP"
+            if (bottom) floorTexture += "_BOTTOM"
+            if (left) floorTexture += "_LEFT"
+            if (right) floorTexture += "_RIGHT"
+            textureToRenderIfSide = TEXTURES[floorTexture]
+          }
+          return [
             <Texture
               x={x}
               y={y}
-              key={index}
+              key={index + "texture"}
               textureSize={textureSize}
               xOffset={xOffset}
               zIndex={1}
               yOffset={yOffset}
-              texture={
-                isBeingEdited && !isEditingOverLay
-                  ? rightMouseDown
-                    ? TEXTURES.FLOOR
-                    : selectedEditTexture
-                  : side
-                  ? textureToRenderIfSide
-                  : texture
-              }
-            ></Texture>
-          )
-        })}
-        {overLayMap.map((overLayTexture, index) => {
-          const x = index % gridWidth
-          const y = Math.floor(index / gridWidth)
-          let isBeingEdited = editing && mouseOverX === x && mouseOverY === y
-          return (
+              texture={side ? textureToRenderIfSide : texture}
+            ></Texture>,
             <Texture
               x={x}
               y={y}
-              key={index}
-              onMouseHoverTextureEnter={e => this.onMouseHoverTextureEnter(e, x, y)}
-              onMouseHoverTextureLeave={e => this.onMouseHoverTextureLeave(e)}
+              key={index + "overLay"}
+              onMouseHoverTextureEnter={(texture, e) =>
+                this.onMouseHoverTextureEnter(e, x, y, texture)
+              }
+              onMouseHoverTextureLeave={(texture, e) => this.onMouseHoverTextureLeave(e, texture)}
+              selectedEditTexture={selectedEditTexture}
+              editing={editing}
               textureSize={textureSize}
               onMouseDown={e => this.onMouseDown(e, x, y)}
               zIndex={2}
               onMouseUp={this.onMouseUp}
               xOffset={xOffset}
               yOffset={yOffset}
-              texture={isBeingEdited && isEditingOverLay ? selectedEditTexture : overLayTexture}
+              texture={overLayTexture}
             ></Texture>
-          )
+          ]
         })}
         <Character
           xOffset={xOffset}

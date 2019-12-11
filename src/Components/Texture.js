@@ -1,6 +1,7 @@
 import React, { Component } from "react"
 import { TEXTURE_DATA } from "../Constants/Textures"
 import styled, { keyframes } from "styled-components"
+import { isTouchDevice } from "../HelperFunctions"
 const getTextureSrc = src => {
   if (Array.isArray(src)) {
     let random = Math.floor(Math.random() * src.length)
@@ -64,9 +65,14 @@ const ProgressBarOver = styled.div`
 export class Texture extends Component {
   constructor(props) {
     super(props)
-    this.state = {}
+    this.state = {
+      mouseOver: false
+    }
   }
-  shouldComponentUpdate(nextProps) {
+  setMouseOver(value) {
+    if (this.state.mouseOver !== value) this.setState({ mouseOver: value })
+  }
+  shouldComponentUpdate(nextProps, nextState) {
     return (
       nextProps.texture !== this.props.texture ||
       nextProps.textureSize !== this.props.textureSize ||
@@ -74,7 +80,8 @@ export class Texture extends Component {
       nextProps.y !== this.props.y ||
       nextProps.xOffset !== this.props.xOffset ||
       nextProps.yOffset !== this.props.yOffset ||
-      nextProps.healthBarPercentage !== this.props.healthBarPercentage
+      nextProps.healthBarPercentage !== this.props.healthBarPercentage ||
+      nextState !== this.state
     )
   }
 
@@ -89,11 +96,14 @@ export class Texture extends Component {
       onMouseHoverTextureEnter,
       onMouseHoverTextureLeave,
       texture,
+      selectedEditTexture,
       zIndex,
       textureSize,
+      editing,
       healthBarPercentage
     } = this.props
     const textureData = TEXTURE_DATA[texture]
+    const selectedEditTextureData = TEXTURE_DATA[selectedEditTexture]
     return (
       <div
         style={{
@@ -116,17 +126,26 @@ export class Texture extends Component {
           </ProgressBarUnder>
         ) : null}
         <Sprite
-          onMouseOut={onMouseHoverTextureLeave}
+          onMouseOut={e => {
+            if (onMouseHoverTextureLeave) onMouseHoverTextureLeave(this, e)
+          }}
           onMouseUp={onMouseUp}
-          textureData={textureData}
+          onTouchEnd={onMouseUp}
+          onTouchStart={onMouseDown}
+          textureData={this.state.mouseOver && editing ? selectedEditTextureData : textureData}
+          onTouchMove={e => {
+            if (onMouseHoverTextureEnter) onMouseHoverTextureEnter(this, e)
+          }}
         >
           <div
             style={{ width: "85%", height: "85%" }}
-            onMouseDown={onMouseDown}
-            onMouseOver={onMouseHoverTextureEnter}
-            onTouchMove={onMouseHoverTextureEnter}
-            onTouchEnd={onMouseUp}
-            onTouchStart={onMouseDown}
+            onMouseDown={e => {
+              if (!isTouchDevice(window)) onMouseDown(e)
+            }}
+            onMouseOver={e => {
+              if (onMouseHoverTextureEnter && !isTouchDevice(window))
+                onMouseHoverTextureEnter(this, e)
+            }}
           ></div>
         </Sprite>
       </div>
