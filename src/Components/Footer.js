@@ -215,7 +215,7 @@ const chickenSpeed = (props, smallScreen) => {
   return smallScreen ? (
     component
   ) : (
-    <Tooltip placement="topLeft" title="Chicken AI Coming Soon!">
+    <Tooltip placement="topLeft" title="Changes The Chicken Movement Speed">
       <SliderContainer>{component.map(item => item)}</SliderContainer>
     </Tooltip>
   )
@@ -503,7 +503,7 @@ export default class Footer extends Component {
                 <Tooltip key={2} placement="topLeft" title="Changes The player Movement Speed">
                   <FlexDivCenter>{playerSpeed(props, true)}</FlexDivCenter>
                 </Tooltip>,
-                <Tooltip key={3} placement="topLeft" title="Chicken AI Coming Soon!">
+                <Tooltip key={3} placement="topLeft" title="Changes The Chicken Movement Speed">
                   <FlexDivCenter>{chickenSpeed(props, true)}</FlexDivCenter>
                 </Tooltip>
               ]

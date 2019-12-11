@@ -1,3 +1,5 @@
+import { CONFIG } from "./Constants/Config"
+
 const calculateBestTextureSize = window => {
   const height = window.screen.height - 300
   const width = window.screen.width
@@ -26,10 +28,18 @@ const isSide = (x, y, width, height) => {
 const isTouchDevice = window => {
   return "ontouchstart" in window
 }
+const deviceIsTooSmall = window => {
+  return (
+    window.screen.height <= CONFIG.MIN_APPLICATION_HEIGHT ||
+    window.screen.width <= CONFIG.MIN_APPLICATION_WIDTH
+  )
+}
+
 export {
   calculateMinTextureSize,
   calculateBestTextureSize,
   calculateMaxTextureSize,
   isSide,
+  deviceIsTooSmall,
   isTouchDevice
 }

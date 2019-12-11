@@ -6,10 +6,9 @@ import styled from "styled-components"
 import { TEXTURES } from "../Constants/Textures"
 import queryString from "query-string"
 import { LEVELS } from "../Constants/Levels"
-import { message } from "antd"
-import { calculateBestTextureSize } from "../HelperFunctions"
+import { message, Modal } from "antd"
+import { calculateBestTextureSize, deviceIsTooSmall } from "../HelperFunctions"
 import "antd/dist/antd.css"
-
 const MainContainer = styled.div`
   display: flex;
   flex-flow: column;
@@ -85,14 +84,17 @@ export class App extends Component {
     }
   }
   componentDidMount() {
-    message.info("Click on The Help Icon At Bottom To Help You Start!")
-    window.addEventListener("keydown", e => {
-      if (e.key.toLowerCase() === " ") {
-        if (!this.state.inProgress && this.state.ready) this.onClickStart()
-        else if (this.state.inProgress && this.state.paused) this.onClickResume()
-        else if (this.state.inProgress && !this.state.paused) this.onClickPause()
-      }
-    })
+    if (deviceIsTooSmall(window)) this.setState({ deviceIsTooSmall: true })
+    else {
+      message.info("Click on The Help Icon At Bottom To Help You Start!")
+      window.addEventListener("keydown", e => {
+        if (e.key.toLowerCase() === " ") {
+          if (!this.state.inProgress && this.state.ready) this.onClickStart()
+          else if (this.state.inProgress && this.state.paused) this.onClickResume()
+          else if (this.state.inProgress && !this.state.paused) this.onClickPause()
+        }
+      })
+    }
   }
   setAllowDiagonalActions(value) {
     this.setState({ allowDiagonalActions: value })
@@ -158,7 +160,11 @@ export class App extends Component {
     this.setState({ searchPriority: value })
   }
   render() {
-    return (
+    return this.state.deviceIsTooSmall ? (
+      <Modal footer={null} visible={true} closable={false}>
+        This Device is Too Small for This Website, Please Use a Bigger Device.
+      </Modal>
+    ) : (
       <MainContainer>
         <Grid onRef={ref => (this.grid = ref)} {...this.state} {...this}></Grid>
         <Footer {...this} {...this.state}></Footer>
