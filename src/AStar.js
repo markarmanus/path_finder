@@ -201,6 +201,11 @@ const isOutOfBoundaries = (position, gridWidth, gridHeight) => {
 const getNextChickenAction = (actions, state, props) => {
   if (props.chickenSpeed === 0) return [0, 0]
   const start = state.currentChickenLocation
+  if (
+    state.texturesMap[start[1] * state.gridWidth + start[0]] === TEXTURES.FIRE &&
+    state.currentPlayerHealth === 1
+  )
+    return [0, 0]
   const goal = BFSFromPlayer(state, props, actions)
   if (start[0] === goal[0] && start[1] === goal[1]) {
     return [0, 0]
@@ -236,7 +241,14 @@ const getNextChickenAction = (actions, state, props) => {
           newLocation.y === state.currentPlayerLocation[1]
         if (!(isCloseToPlayerX || isCloseToPlayerY)) {
           if (!isPlayerLocation) {
-            const g = node.g + 100
+            const index = newLocation.y * state.gridWidth + newLocation.x
+            const g =
+              state.texturesMap[index] === TEXTURES.FIRE
+                ? node.g - 500
+                : state.overLayMap[index] === TEXTURES.HEALTH_PACK
+                ? node.g - 1000
+                : node.g + 100
+
             const h = costToLocation([newLocation.x, newLocation.y], goal)
             const newNode = new Node(newLocation.x, newLocation.y, 0, node, action, g, h)
             addToOpen(newNode, open)
@@ -299,7 +311,7 @@ const getNextAction = (state, props, characterType) => {
     }
 
     let node = open.pop()
-    if (node.x === goal[0] && node.y === goal[1]) {
+    if (node.x === goal[0] && node.y === goal[1] && node.health > 0) {
       if (node.health === props.playerMaxHealth || props.searchPriority === CONSTANTS.SPEED) {
         return getPath(node)
       } else if (node.health > bestPathFoundHealth) {
