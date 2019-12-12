@@ -1,35 +1,19 @@
 import { TEXTURES } from "./Constants/Textures"
 import { CONSTANTS } from "./Constants/Constants"
 import { CONFIG } from "./Constants/Config"
-import { isSide } from "./HelperFunctions"
 const costToLocation = (from, to) => {
   let dx = to[0] - from[0]
   let dy = to[1] - from[1]
   let distance = Math.sqrt(dx * dx + dy * dy)
   return distance * 100
 }
-const getActionType = action => {
-  return action[0] + action[1] === 0 || Math.abs(action[0] + action[1]) === 2
-    ? "diagonal"
-    : "cardinal"
-}
-const isLegalAction = (x, y, action, state) => {
-  const destinationPos = { x: x + action[0], y: y + action[1] }
-  const actionType = getActionType(action)
-  if (isOutOfBoundaries(destinationPos, state.gridWidth, state.gridHeight)) return false
-  if (isSide(destinationPos.x, destinationPos.y, state.gridWidth, state.gridHeight)) return false
-  const isDestinationWall =
-    state.texturesMap[destinationPos.y * state.gridWidth + destinationPos.x] === TEXTURES.WALL
-  if (actionType === "diagonal") {
-    const isHorizontalWall =
-      state.texturesMap[y * state.gridWidth + destinationPos.x] === TEXTURES.WALL
-    const isVerticalWall =
-      state.texturesMap[destinationPos.y * state.gridWidth + x] === TEXTURES.WALL
 
-    return !(isHorizontalWall || isVerticalWall || isDestinationWall)
-  } else {
-    return !isDestinationWall
-  }
+const isLegalAction = (x, y, action, state, props) => {
+  const destinationPos = { x: x + action[0], y: y + action[1] }
+  const destinationIndex = destinationPos.y * state.gridWidth + destinationPos.x
+  if (isOutOfBoundaries(destinationPos, state.gridWidth, state.gridHeight)) return false
+  const isDestinationWall = state.texturesMap[destinationIndex] === TEXTURES.WALL
+  return !isDestinationWall
 }
 const addToOpen = (nodeToAdd, open) => {
   let added = false
@@ -76,39 +60,37 @@ const getPath = node => {
 
   return action
 }
-const calculateChickenCollectedPaths = (state, actions) => {
+const isOneMoveApart = (firstLocation, secondLocation) => {
+  const isCloseOnX =
+    Math.abs(firstLocation[0] - secondLocation[0]) === 1 && firstLocation[1] === secondLocation[1]
+  const isCloseOnY =
+    Math.abs(firstLocation[1] - secondLocation[1]) === 1 && firstLocation[0] === secondLocation[0]
+  const isSameLocation =
+    firstLocation[0] === secondLocation[0] && firstLocation[1] === secondLocation[1]
+  return isCloseOnX || isCloseOnY || isSameLocation
+}
+const calculateChickenConnectedPaths = (state, props, actions) => {
   let connected = new Array(state.gridHeight * state.gridWidth).fill(false)
   let closed = new Array(state.gridHeight * state.gridWidth).fill(false)
   let open = []
   let chickenLocation = state.currentChickenLocation
-  open.push(new Node(chickenLocation[0], chickenLocation[1], null, null, null, 0, 0))
+  open.push(chickenLocation)
   while (true) {
     if (open.length === 0) {
       return connected
     }
-    let node = open.shift()
-    const index = node.y * state.gridWidth + node.x
-
+    let location = open.shift()
+    const index = location[1] * state.gridWidth + location[0]
     if (closed[index]) {
       continue
     }
     closed[index] = true
     connected[index] = true
     actions.forEach(action => {
-      if (isLegalAction(node.x, node.y, action, state)) {
-        const newLocation = { x: node.x + action[0], y: node.y + action[1] }
-        const isCloseToPlayerX =
-          Math.abs(newLocation.x - state.currentPlayerLocation[0]) === 1 &&
-          newLocation.y === state.currentPlayerLocation[1]
-        const isCloseToPlayerY =
-          Math.abs(newLocation.y - state.currentPlayerLocation[1]) === 1 &&
-          newLocation.x === state.currentPlayerLocation[0]
-
-        const isPlayerLocation =
-          newLocation.x === state.currentPlayerLocation[0] &&
-          newLocation.y === state.currentPlayerLocation[1]
-        if (!isPlayerLocation && !isCloseToPlayerX && !isCloseToPlayerY) {
-          open.push(new Node(newLocation.x, newLocation.y, null, node, action, 0, 0))
+      if (isLegalAction(location[0], location[1], action, state, props)) {
+        const newLocation = [location[0] + action[0], location[1] + action[1]]
+        if (!isOneMoveApart(newLocation, state.currentPlayerLocation)) {
+          open.push(newLocation)
         }
       }
     })
@@ -141,8 +123,8 @@ const debug = (array, state, props, printValue) => {
     }
   })
 }
-const BFSFromPlayer = (state, props, actions) => {
-  let connected = calculateChickenCollectedPaths(state, actions)
+const FurthestPointFromPlayer = (state, props, actions) => {
+  let connected = calculateChickenConnectedPaths(state, props, actions)
   let open = []
   let playerLocation = state.currentPlayerLocation
   open.push(
@@ -168,7 +150,7 @@ const BFSFromPlayer = (state, props, actions) => {
     values[index] = node.g
 
     actions.forEach(action => {
-      if (isLegalAction(node.x, node.y, action, state)) {
+      if (isLegalAction(node.x, node.y, action, state, props)) {
         const newLocation = [node.x + action[0], node.y + action[1]]
         const index = newLocation[1] * state.gridWidth + newLocation[0]
         if (
@@ -176,10 +158,9 @@ const BFSFromPlayer = (state, props, actions) => {
           (node.x === state.currentPlayerLocation[0] && node.y === state.currentPlayerLocation[1])
         ) {
           const isFire = state.texturesMap[index] === TEXTURES.FIRE
-          let newCost = node.g + 100
-          newCost = isFire ? newCost + 500 : newCost
+          let newCost = isFire ? node.g + 600 : node.g + 100
           const newHealth = isFire ? node.health - 1 : node.health
-          if (newHealth <= 0) newCost = 100000000 + newCost
+          if (newHealth <= 0) newCost += 100000000
           let newNode = new Node(
             newLocation[0],
             newLocation[1],
@@ -196,7 +177,9 @@ const BFSFromPlayer = (state, props, actions) => {
   }
 }
 const isOutOfBoundaries = (position, gridWidth, gridHeight) => {
-  return position.x < 0 || position.y < 0 || position.x >= gridWidth || position.y >= gridHeight
+  return (
+    position.x < 1 || position.y < 1 || position.x >= gridWidth - 1 || position.y >= gridHeight - 1
+  )
 }
 const getNextChickenAction = (actions, state, props) => {
   if (props.chickenSpeed === 0) return [0, 0]
@@ -206,7 +189,7 @@ const getNextChickenAction = (actions, state, props) => {
     state.currentPlayerHealth === 1
   )
     return [0, 0]
-  const goal = BFSFromPlayer(state, props, actions)
+  const goal = FurthestPointFromPlayer(state, props, actions)
   if (start[0] === goal[0] && start[1] === goal[1]) {
     return [0, 0]
   }
@@ -219,42 +202,29 @@ const getNextChickenAction = (actions, state, props) => {
       return [0, 0]
     }
     let node = open.pop()
+    const index = node.y * state.gridWidth + node.x
     if (node.x === goal[0] && node.y === goal[1]) {
       return getPath(node)
     }
-    if (closed[node.y * state.gridWidth + node.x]) {
+    if (closed[index]) {
       continue
     }
-    closed[node.y * state.gridWidth + node.x] = true
+    closed[index] = true
     actions.forEach(action => {
-      if (isLegalAction(node.x, node.y, action, state)) {
-        const newLocation = { x: node.x + action[0], y: node.y + action[1] }
-        const isCloseToPlayerX =
-          Math.abs(newLocation.x - state.currentPlayerLocation[0]) === 1 &&
-          newLocation.y === state.currentPlayerLocation[1]
-        const isCloseToPlayerY =
-          Math.abs(newLocation.y - state.currentPlayerLocation[1]) === 1 &&
-          newLocation.x === state.currentPlayerLocation[0]
+      if (isLegalAction(node.x, node.y, action, state, props)) {
+        const newLocation = [node.x + action[0], node.y + action[1]]
+        if (!isOneMoveApart(newLocation, state.currentPlayerLocation)) {
+          const index = newLocation.y * state.gridWidth + newLocation.x
+          const g =
+            state.texturesMap[index] === TEXTURES.FIRE
+              ? node.g - 500
+              : state.overLayMap[index] === TEXTURES.HEALTH_PACK
+              ? node.g - 1000
+              : node.g + 100
 
-        const isPlayerLocation =
-          newLocation.x === state.currentPlayerLocation[0] &&
-          newLocation.y === state.currentPlayerLocation[1]
-        if (!(isCloseToPlayerX || isCloseToPlayerY)) {
-          if (!isPlayerLocation) {
-            const index = newLocation.y * state.gridWidth + newLocation.x
-            const g =
-              state.texturesMap[index] === TEXTURES.FIRE
-                ? node.g - 500
-                : state.overLayMap[index] === TEXTURES.HEALTH_PACK
-                ? node.g - 1000
-                : node.g + 100
-
-            const h = costToLocation([newLocation.x, newLocation.y], goal)
-            const newNode = new Node(newLocation.x, newLocation.y, 0, node, action, g, h)
-            addToOpen(newNode, open)
-          } else {
-          }
-        } else {
+          const h = costToLocation([newLocation.x, newLocation.y], goal)
+          const newNode = new Node(newLocation.x, newLocation.y, 0, node, action, g, h)
+          addToOpen(newNode, open)
         }
       }
     })
@@ -267,13 +237,7 @@ const getNextAction = (state, props, characterType) => {
     [1, 0],
     [-1, 0]
   ]
-  let diagonalActions = [
-    [1, 1],
-    [-1, 1],
-    [1, -1],
-    [-1, -1]
-  ]
-  if (props.allowDiagonalActions) actions = actions.concat(diagonalActions)
+
   if (characterType === CONSTANTS.CHICKEN) return getNextChickenAction(actions, state, props)
   let start = state.currentPlayerLocation
   let goal = state.currentChickenLocation
@@ -285,7 +249,7 @@ const getNextAction = (state, props, characterType) => {
     return [0, 0]
   }
 
-  let actionsCost = [100, 100, 100, 100, 144, 141, 141, 141]
+  let actionsCost = [100, 100, 100, 100]
   let closed = [...new Array(state.gridWidth * state.gridHeight)].map(() =>
     new Array(props.playerMaxHealth).fill(false)
   )
@@ -311,6 +275,7 @@ const getNextAction = (state, props, characterType) => {
     }
 
     let node = open.pop()
+    let index = node.y * state.gridWidth + node.x
     if (node.x === goal[0] && node.y === goal[1] && node.health > 0) {
       if (node.health === props.playerMaxHealth || props.searchPriority === CONSTANTS.SPEED) {
         return getPath(node)
@@ -321,23 +286,20 @@ const getNextAction = (state, props, characterType) => {
       }
     }
 
-    // checks if node in closed, where closed is an array with true false values for any state at x,y by accessing index at y * the with + x
-    if (closed[node.y * state.gridWidth + node.x][node.health - 1]) {
+    if (closed[index][node.health - 1]) {
       continue
     }
 
-    closed[node.y * state.gridWidth + node.x][node.health - 1] = true
+    closed[index][node.health - 1] = true
     if (node.health <= 0) continue
     actions.forEach((action, index) => {
-      if (isLegalAction(node.x, node.y, action, state)) {
+      if (isLegalAction(node.x, node.y, action, state, props)) {
         const newLocation = { x: node.x + action[0], y: node.y + action[1] }
+        const newLocationIndex = newLocation.y * state.gridWidth + newLocation.x
         let g = node.g + actionsCost[index]
         const h = costToLocation([newLocation.x, newLocation.y], goal)
-        const healthPackOnLocation =
-          state.overLayMap[newLocation.y * state.gridWidth + newLocation.x] === TEXTURES.HEALTH_PACK
-        const isLava =
-          state.texturesMap[newLocation.y * state.gridWidth + newLocation.x] === TEXTURES.FIRE
-
+        const healthPackOnLocation = state.overLayMap[newLocationIndex] === TEXTURES.HEALTH_PACK
+        const isLava = state.texturesMap[newLocationIndex] === TEXTURES.FIRE
         const health = healthPackOnLocation
           ? props.playerMaxHealth
           : isLava
@@ -363,4 +325,4 @@ class Node {
     this.h = h
   }
 }
-export default getNextAction
+export { getNextAction, isLegalAction }

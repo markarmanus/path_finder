@@ -29,7 +29,6 @@ export class App extends Component {
       reRenderGrid: false,
       ready: false,
       followCursor: false,
-      // allowDiagonalActions: params.allowDiagonalActions ? params.allowDiagonalActions : false,
       playerSpeed: params.playerSpeed ? params.playerSpeed : CONFIG.DEFAULT_PLAYER_SPEED,
       playerMaxHealth: params.playerMaxHealth
         ? params.playerMaxHealth
@@ -54,7 +53,6 @@ export class App extends Component {
     this.setSearchPriority = this.setSearchPriority.bind(this)
     this.onFinishGame = this.onFinishGame.bind(this)
     this.generateLink = this.generateLink.bind(this)
-    this.setAllowDiagonalActions = this.setAllowDiagonalActions.bind(this)
     this.setSelectedLevel = this.setSelectedLevel.bind(this)
     this.parseLevelData = this.parseLevelData.bind(this)
   }
@@ -85,9 +83,7 @@ export class App extends Component {
       })
     }
   }
-  setAllowDiagonalActions(value) {
-    this.setState({ allowDiagonalActions: value })
-  }
+
   onFinishGame() {
     this.setState({ inProgress: false })
   }

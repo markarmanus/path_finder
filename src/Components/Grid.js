@@ -4,7 +4,7 @@ import Texture from "./Texture"
 import { TEXTURES, TEXTURE_DATA } from "../Constants/Textures"
 import { CONFIG } from "../Constants/Config"
 import Character from "./Character"
-import getNextAction from "../AI.js"
+import { getNextAction, isLegalAction } from "../AI.js"
 import { Modal, Button, Typography, message } from "antd"
 
 import { CONSTANTS } from "../Constants/Constants"
@@ -70,6 +70,7 @@ export class Grid extends Component {
       showModal: false,
       gridWidth: 0,
       editorExpanded: true,
+      preComputedLegalActions: [],
       gridHeight: 0,
       xOffset: 0,
       yOffset: 0,
@@ -92,6 +93,26 @@ export class Grid extends Component {
     this.setCharacterCurrentHealth = this.setCharacterCurrentHealth.bind(this)
     this.onCharacterFinishMove = this.onCharacterFinishMove.bind(this)
     this.updateURL = this.updateURL.bind(this)
+    this.preComputeLegalActions = this.preComputeLegalActions.bind(this)
+  }
+  preComputeLegalActions() {
+    const actions = [
+      [0, 1],
+      [1, 0],
+      [0, -1],
+      [-1, 0]
+    ]
+    let legalActions = [...new Array(this.state.gridWidth * this.state.gridHeight)].map(() => [])
+    for (let x = 1; x < this.state.gridWidth - 1; x++) {
+      for (let y = 1; y < this.state.gridHeight - 1; y++) {
+        const index = y * this.state.gridWidth + x
+        actions.forEach(action => {
+          if (isLegalAction(x, y, action, this.state, this.props)) legalActions[index].push(action)
+        })
+      }
+    }
+    console.log(legalActions)
+    this.setState({ preComputedLegalActions: legalActions })
   }
 
   setCharacterCurrentHealth(character, value) {
@@ -148,7 +169,6 @@ export class Grid extends Component {
       playerMaxHealth: this.props.playerMaxHealth,
       initialTexturesMap: this.state.texturesMap,
       searchPriority: this.props.searchPriority,
-      allowDiagonalActions: this.props.allowDiagonalActions,
       initialOverLayMap: this.state.overLayMap,
       gridWidth: this.state.gridWidth,
       gridHeight: this.state.gridHeight,
@@ -411,6 +431,9 @@ export class Grid extends Component {
     this.container.oncontextmenu = function() {
       return false
     }
+    setTimeout(() => {
+      this.preComputeLegalActions()
+    }, 0)
   }
   onCharacterFinishMove(characterType, action) {
     const { overLayMap, currentPlayerLocation, currentChickenLocation, texturesMap } = this.state
