@@ -16,7 +16,7 @@ const calculateMinTextureSize = window => {
   const height = window.screen.height - 300
   const width = window.screen.width
 
-  return Math.floor(Math.max(...[height / 50, width / 50]))
+  return Math.floor(Math.max(...[height / 35, width / 35]))
 }
 const isSide = (x, y, width, height) => {
   const left = x === 0
