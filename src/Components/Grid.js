@@ -360,7 +360,11 @@ export class Grid extends Component {
   }
   componentDidMount() {
     let rendered = false
-    if (this.props.URLParams !== null) {
+    if (
+      this.props.URLParams !== null &&
+      this.props.URLParams.initialTexturesMap !== undefined &&
+      this.props.URLParams.initialOverLayMap !== undefined
+    ) {
       if (
         this.props.URLParams.initialTexturesMap.length > 0 &&
         this.props.URLParams.initialOverLayMap.length > 0
