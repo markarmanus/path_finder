@@ -1,6 +1,6 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "26080c4c667c4592d56082cbc040f834",
+    "revision": "088c25068c2be530d459f01af53adac7",
     "url": "//markarmanus.github.io/runChicken/index.html"
   },
   {
@@ -8,7 +8,7 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "//markarmanus.github.io/runChicken/static/css/2.fb9ed26a.chunk.css"
   },
   {
-    "revision": "c277398d27efeb6b8e5a",
+    "revision": "72b68e704444ef8f203f",
     "url": "//markarmanus.github.io/runChicken/static/css/main.eda72dcc.chunk.css"
   },
   {
@@ -16,8 +16,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "//markarmanus.github.io/runChicken/static/js/2.e7e32ae8.chunk.js"
   },
   {
-    "revision": "c277398d27efeb6b8e5a",
-    "url": "//markarmanus.github.io/runChicken/static/js/main.61dcf5f6.chunk.js"
+    "revision": "72b68e704444ef8f203f",
+    "url": "//markarmanus.github.io/runChicken/static/js/main.88b35020.chunk.js"
   },
   {
     "revision": "5da2e77f45a6f34c6a69",
