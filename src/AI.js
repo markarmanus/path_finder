@@ -8,7 +8,7 @@ const costToLocation = (from, to) => {
   return distance * 100
 }
 
-const isLegalAction = (x, y, action, state, props) => {
+const isLegalAction = (x, y, action, state) => {
   const destinationPos = { x: x + action[0], y: y + action[1] }
   const destinationIndex = destinationPos.y * state.gridWidth + destinationPos.x
   if (isOutOfBoundaries(destinationPos, state.gridWidth, state.gridHeight)) return false
@@ -87,7 +87,7 @@ const calculateChickenConnectedPaths = (state, props, actions) => {
     closed[index] = true
     connected[index] = true
     actions.forEach(action => {
-      if (isLegalAction(location[0], location[1], action, state, props)) {
+      if (isLegalAction(location[0], location[1], action, state)) {
         const newLocation = [location[0] + action[0], location[1] + action[1]]
         if (!isOneMoveApart(newLocation, state.currentPlayerLocation)) {
           open.push(newLocation)
@@ -150,7 +150,7 @@ const FurthestPointFromPlayer = (state, props, actions) => {
     values[index] = node.g
 
     actions.forEach(action => {
-      if (isLegalAction(node.x, node.y, action, state, props)) {
+      if (isLegalAction(node.x, node.y, action, state)) {
         const newLocation = [node.x + action[0], node.y + action[1]]
         const index = newLocation[1] * state.gridWidth + newLocation[0]
         if (
@@ -211,10 +211,10 @@ const getNextChickenAction = (actions, state, props) => {
     }
     closed[index] = true
     actions.forEach(action => {
-      if (isLegalAction(node.x, node.y, action, state, props)) {
+      if (isLegalAction(node.x, node.y, action, state)) {
         const newLocation = [node.x + action[0], node.y + action[1]]
         if (!isOneMoveApart(newLocation, state.currentPlayerLocation)) {
-          const index = newLocation.y * state.gridWidth + newLocation.x
+          const index = newLocation[1] * state.gridWidth + newLocation[0]
           const g =
             state.texturesMap[index] === TEXTURES.FIRE
               ? node.g - 500
@@ -222,8 +222,8 @@ const getNextChickenAction = (actions, state, props) => {
               ? node.g - 1000
               : node.g + 100
 
-          const h = costToLocation([newLocation.x, newLocation.y], goal)
-          const newNode = new Node(newLocation.x, newLocation.y, 0, node, action, g, h)
+          const h = costToLocation(newLocation, goal)
+          const newNode = new Node(newLocation[0], newLocation[1], 0, node, action, g, h)
           addToOpen(newNode, open)
         }
       }
@@ -293,7 +293,7 @@ const getNextAction = (state, props, characterType) => {
     closed[index][node.health - 1] = true
     if (node.health <= 0) continue
     actions.forEach((action, index) => {
-      if (isLegalAction(node.x, node.y, action, state, props)) {
+      if (isLegalAction(node.x, node.y, action, state)) {
         const newLocation = { x: node.x + action[0], y: node.y + action[1] }
         const newLocationIndex = newLocation.y * state.gridWidth + newLocation.x
         let g = node.g + actionsCost[index]
@@ -325,4 +325,4 @@ class Node {
     this.h = h
   }
 }
-export { getNextAction, isLegalAction }
+export { getNextAction }
