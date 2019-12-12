@@ -253,6 +253,7 @@ const getPlayButton = props => {
       fontSize={35}
       margin={"0 15px 0 15px"}
       onClick={() => {
+        if (props.isInitialLoad) props.showTutorialMessages()
         props.generateLink()
         props.onClickStart()
       }}

@@ -65,6 +65,7 @@ export class Grid extends Component {
     this.state = {
       texturesMap: [],
       overLayMap: [],
+      originalOverLayMap: [],
       edits: [],
       modalMessage: "",
       showModal: false,
@@ -267,6 +268,9 @@ export class Grid extends Component {
     if (prevProps.playerMaxHealth !== this.props.playerMaxHealth) {
       this.setState({ currentPlayerHealth: this.props.playerMaxHealth })
     }
+    if (this.props.inProgress && prevProps.inProgress !== this.props.inProgress) {
+      this.setState({ originalOverLayMap: this.state.overLayMap })
+    }
   }
 
   initializeGridFromData(data) {
@@ -281,6 +285,7 @@ export class Grid extends Component {
     this.setState({
       texturesMap: data.initialTexturesMap,
       overLayMap: data.initialOverLayMap,
+      originalOverLayMap: data.initialOverLayMap,
       gridWidth: data.gridWidth,
       gridHeight: data.gridHeight,
       xOffset,
@@ -307,6 +312,7 @@ export class Grid extends Component {
     this.setState({
       texturesMap: texturesMap,
       overLayMap: overLayMap,
+      originalOverLayMap: overLayMap,
       gridWidth,
       gridHeight,
       xOffset,
@@ -477,6 +483,7 @@ export class Grid extends Component {
     this.setState({
       currentPlayerLocation: this.state.initialPlayerLocation,
       currentChickenLocation: this.state.initialChickenLocation,
+      overLayMap: this.state.originalOverLayMap,
       currentPlayerHealth: this.props.playerMaxHealth,
       currentChickenHealth: this.props.chickenMaxHealth
     })

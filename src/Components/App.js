@@ -25,6 +25,7 @@ export class App extends Component {
       selectedLevel: CONFIG.DEFAULT_SELECTED_LEVEL,
       inProgress: false,
       URLParams: this.props.location.search === "" ? null : params,
+      isInitialLoad: true,
       paused: false,
       reRenderGrid: false,
       ready: false,
@@ -55,6 +56,11 @@ export class App extends Component {
     this.generateLink = this.generateLink.bind(this)
     this.setSelectedLevel = this.setSelectedLevel.bind(this)
     this.parseLevelData = this.parseLevelData.bind(this)
+    this.showTutorialMessages = this.showTutorialMessages.bind(this)
+  }
+  showTutorialMessages() {
+    message.info("You Can Edit The Map And The AI Will React in RealTime!!")
+    this.setState({ isInitialLoad: false })
   }
   parseLevelData(value) {
     return queryString.parse(value, {
