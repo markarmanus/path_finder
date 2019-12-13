@@ -475,18 +475,10 @@ export class Grid extends Component {
       levelData.gridHeight,
       this.container
     )
-
-    if (
-      textureSizeForLevel <= calculateMaxTextureSize(window) &&
-      textureSizeForLevel >= calculateMinTextureSize(window)
-    ) {
-      this.props.setTextureSize(textureSizeForLevel, false)
-      setTimeout(() => {
-        this.initializeGridFromData(levelData)
-      }, 0)
-    } else {
-      message.error("Your Screen is Not Compatible with this Level!")
-    }
+    this.props.setTextureSize(textureSizeForLevel, false)
+    setTimeout(() => {
+      this.initializeGridFromData(levelData)
+    }, 0)
   }
   onClickTexture(texture) {
     if (this.props.followCursor) this.props.onClickPause()

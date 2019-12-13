@@ -254,7 +254,6 @@ const getPlayButton = props => {
       margin={"0 15px 0 15px"}
       onClick={() => {
         if (props.isInitialLoad) props.showTutorialMessages()
-        props.generateLink()
         props.onClickStart()
       }}
       icon={"play-circle"}
@@ -489,7 +488,10 @@ export default class Footer extends Component {
               <StyledSlider
                 min={minTextureSize}
                 max={maxTextureSize}
-                onChange={value => props.setTextureSize(value, true)}
+                onChange={value => {
+                  if (!(props.textureSize <= value && value === minTextureSize))
+                    props.setTextureSize(value, true)
+                }}
                 disabled={props.inProgress}
                 value={props.textureSize !== null ? props.textureSize : 0}
                 tooltipPlacement={"top"}

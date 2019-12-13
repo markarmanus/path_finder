@@ -168,8 +168,8 @@ const FurthestPointFromPlayer = (state, props, actions) => {
           (node.x === state.currentPlayerLocation[0] && node.y === state.currentPlayerLocation[1])
         ) {
           const isFire = state.texturesMap[index] === TEXTURES.FIRE
-          // if there is allot of fire in any place add value to it.
-          let newCost = isFire ? node.g + 600 : node.g + 100
+          // remove cost if this is fire to amount for the +100 of damage to the player.
+          let newCost = isFire ? node.g : node.g + 100
           const newHealth = isFire ? node.health - 1 : node.health
           // if there is a place where the player has to die add as extremely high value.
           if (newHealth <= 0) newCost += 100000000
