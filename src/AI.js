@@ -1,6 +1,7 @@
 import { TEXTURES } from "./Constants/Textures"
 import { CONSTANTS } from "./Constants/Constants"
 import { CONFIG } from "./Constants/Config"
+// calculates the cost between two locations.
 const costToLocation = (from, to) => {
   let dx = to[0] - from[0]
   let dy = to[1] - from[1]
@@ -15,6 +16,7 @@ const isLegalAction = (x, y, action, state) => {
   const isDestinationWall = state.texturesMap[destinationIndex] === TEXTURES.WALL
   return !isDestinationWall
 }
+// Adds a node to the open list (priority Queue implementation)
 const addToOpen = (nodeToAdd, open) => {
   let added = false
   // check if its already in the open list.
@@ -33,7 +35,7 @@ const addToOpen = (nodeToAdd, open) => {
   // if its not already in the open list add where it belongs based on the f value.
   if (!added) {
     const nodeToAddF = nodeToAdd.g + nodeToAdd.h
-    // keep going until the f value is more than or qrual to the one in the open list and that where you add the node.
+    // keep going until the f value is more than or equal to the one in the open list and that where you add the node.
     for (let index = 0; index < open.length; index++) {
       const node = open[index]
       const nodeF = node.g + node.h
@@ -50,9 +52,11 @@ const addToOpen = (nodeToAdd, open) => {
   }
 }
 
+// return the path from the node passed.
 const getPath = node => {
   let action = node.action
   let parent = node.parent
+  // keep going backwards until you reach the start
   while (parent !== null && parent.action !== null) {
     action = parent.action
     parent = parent.parent
@@ -60,6 +64,7 @@ const getPath = node => {
 
   return action
 }
+// Detects wether 2 locations are one move apart from each other.
 const isOneMoveApart = (firstLocation, secondLocation) => {
   const isCloseOnX =
     Math.abs(firstLocation[0] - secondLocation[0]) === 1 && firstLocation[1] === secondLocation[1]
@@ -69,6 +74,7 @@ const isOneMoveApart = (firstLocation, secondLocation) => {
     firstLocation[0] === secondLocation[0] && firstLocation[1] === secondLocation[1]
   return isCloseOnX || isCloseOnY || isSameLocation
 }
+// Uses BFS to generate all paths that the chicken can reach
 const calculateChickenConnectedPaths = (state, props, actions) => {
   let connected = new Array(state.gridHeight * state.gridWidth).fill(false)
   let closed = new Array(state.gridHeight * state.gridWidth).fill(false)
@@ -96,6 +102,7 @@ const calculateChickenConnectedPaths = (state, props, actions) => {
     })
   }
 }
+// function to use for debugging an array values on the screen
 const debug = (array, state, props, printValue) => {
   array.forEach((value, index) => {
     const y = Math.floor(index / state.gridWidth)
@@ -123,6 +130,7 @@ const debug = (array, state, props, printValue) => {
     }
   })
 }
+// Calculates the furthest point from the player that is withing the chicken reach by using UCS
 const FurthestPointFromPlayer = (state, props, actions) => {
   let connected = calculateChickenConnectedPaths(state, props, actions)
   let open = []
@@ -134,6 +142,7 @@ const FurthestPointFromPlayer = (state, props, actions) => {
   let values = new Array(state.gridWidth * state.gridHeight).fill(0)
   while (true) {
     if (open.length === 0) {
+      // return the location with the highest value.
       let index = values.indexOf(Math.max(...values))
       let y = Math.floor(index / state.gridWidth)
       let x = Math.floor(index % state.gridWidth)
@@ -153,13 +162,16 @@ const FurthestPointFromPlayer = (state, props, actions) => {
       if (isLegalAction(node.x, node.y, action, state)) {
         const newLocation = [node.x + action[0], node.y + action[1]]
         const index = newLocation[1] * state.gridWidth + newLocation[0]
+        // if its within reach of the chicken or this is the starting node. (player node is where we started the search)
         if (
           connected[index] ||
           (node.x === state.currentPlayerLocation[0] && node.y === state.currentPlayerLocation[1])
         ) {
           const isFire = state.texturesMap[index] === TEXTURES.FIRE
+          // if there is allot of fire in any place add value to it.
           let newCost = isFire ? node.g + 600 : node.g + 100
           const newHealth = isFire ? node.health - 1 : node.health
+          // if there is a place where the player has to die add as extremely high value.
           if (newHealth <= 0) newCost += 100000000
           let newNode = new Node(
             newLocation[0],
@@ -181,9 +193,11 @@ const isOutOfBoundaries = (position, gridWidth, gridHeight) => {
     position.x < 1 || position.y < 1 || position.x >= gridWidth - 1 || position.y >= gridHeight - 1
   )
 }
+// Calculates the optimal path using A* to the furthest point from the player
 const getNextChickenAction = (actions, state, props) => {
   if (props.chickenSpeed === 0) return [0, 0]
   const start = state.currentChickenLocation
+  // if we are on fire and the player is at 1 health just stay still.
   if (
     state.texturesMap[start[1] * state.gridWidth + start[0]] === TEXTURES.FIRE &&
     state.currentPlayerHealth === 1
@@ -215,6 +229,7 @@ const getNextChickenAction = (actions, state, props) => {
         const newLocation = [node.x + action[0], node.y + action[1]]
         if (!isOneMoveApart(newLocation, state.currentPlayerLocation)) {
           const index = newLocation[1] * state.gridWidth + newLocation[0]
+          // if we can take a path with fire, prioritize it, also prioritize even more picking up health packs.
           const g =
             state.texturesMap[index] === TEXTURES.FIRE
               ? node.g - 500
@@ -230,6 +245,7 @@ const getNextChickenAction = (actions, state, props) => {
     })
   }
 }
+
 const getNextAction = (state, props, characterType) => {
   let actions = [
     [0, 1],
@@ -250,6 +266,7 @@ const getNextAction = (state, props, characterType) => {
   }
 
   let actionsCost = [100, 100, 100, 100]
+  // closed for each location with each possible health value.
   let closed = [...new Array(state.gridWidth * state.gridHeight)].map(() =>
     new Array(props.playerMaxHealth).fill(false)
   )
@@ -277,9 +294,11 @@ const getNextAction = (state, props, characterType) => {
     let node = open.pop()
     let index = node.y * state.gridWidth + node.x
     if (node.x === goal[0] && node.y === goal[1] && node.health > 0) {
+      // if we prioritize speed or this is a path where we wont lose health return immediately.
       if (node.health === props.playerMaxHealth || props.searchPriority === CONSTANTS.SPEED) {
         return getPath(node)
       } else if (node.health > bestPathFoundHealth) {
+        // keep a record of the best path that has highest health.
         foundPath = true
         bestPathFoundHealth = node.health
         bestPathNode = node
@@ -305,6 +324,7 @@ const getNextAction = (state, props, characterType) => {
           : isLava
           ? node.health - 1
           : node.health
+        // small addition to the g cost when fire to avoid fire when small adjustment to path is possible.
         if (isLava && !healthPackOnLocation) g += 20
 
         const newNode = new Node(newLocation.x, newLocation.y, health, node, action, g, h)

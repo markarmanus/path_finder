@@ -101,10 +101,12 @@ export class Grid extends Component {
   }
   onMouseDown(e, x, y) {
     e.persist()
+    // if left click or touch on mobile device.
     if (e.button === 0 || e.type === "touchstart") {
       this.setState({ leftMouseDown: true }, () => {
         this.onMouseHoverTextureEnter(e, x, y)
       })
+      // if right click
     } else if (e.button === 2) {
       this.setState({ rightMouseDown: true }, () => {
         this.onMouseHoverTextureEnter(e, x, y)
@@ -129,6 +131,7 @@ export class Grid extends Component {
   }
   resetCharactersLocation(character) {
     if (character === CONSTANTS.PLAYER) {
+      // resets their left and top that is used to simulate movement on the screen.
       let player = document.getElementById(CONSTANTS.PLAYER)
       player.style.left = 0
       player.style.top = 0
@@ -144,6 +147,7 @@ export class Grid extends Component {
   }
 
   updateURL() {
+    // saves map data in url for sharing.
     let newURLObject = {
       playerSpeed: this.props.playerSpeed,
       playerMaxHealth: this.props.playerMaxHealth,
@@ -182,6 +186,7 @@ export class Grid extends Component {
     } = this.state
     let index = 0
     let side = true
+    // if we are sliding our finder replace index based on finger location.
     if (e.type === "touchmove") {
       let touchX = Math.floor((e.touches[0].pageX - xOffset) / textureSize)
       let touchY = Math.floor((e.touches[0].pageY - yOffset) / textureSize)
@@ -193,15 +198,18 @@ export class Grid extends Component {
       side = isSide(x, y, gridWidth, gridHeight)
     }
     if (!side) {
+      // if we are placing the characters
       if (
         selectedEditTexture === TEXTURES.PLAYER_IDLE ||
         selectedEditTexture === TEXTURES.CHICKEN_IDLE
       ) {
         this.handleHoverWhilePlacingCharacter(selectedEditTexture, x, y)
       } else if (editing) {
+        // add border when hovering.
         if (e.target !== null && !isTouchDevice(window)) {
           e.target.parentElement.parentElement.style.border = CONFIG.EDITING_BORDER
         }
+        // add when holding left mouse down.
         if (leftMouseDown) {
           if (selectedEditTexture === TEXTURES.HEALTH_PACK) {
             if (overLayMap[index] !== TEXTURES.HEALTH_PACK || e.type === "touchstart") {
@@ -224,6 +232,7 @@ export class Grid extends Component {
               edits: [...edits, { type: CONSTANTS.TEXTURE, texture: texturesMap[index], x, y }]
             })
           }
+          // delete when holding right mouse button.
         } else if (rightMouseDown) {
           let stateUpdate = {}
           let editsUpdate = [...edits]
@@ -262,17 +271,20 @@ export class Grid extends Component {
     }
   }
   componentDidUpdate(prevProps) {
+    // if user changed textureSize from slider.
     if (prevProps.textureSize !== this.props.textureSize && this.props.reRenderGrid) {
       this.initializeGridWithTextureSize(this.props.textureSize)
     }
     if (prevProps.playerMaxHealth !== this.props.playerMaxHealth) {
       this.setState({ currentPlayerHealth: this.props.playerMaxHealth })
     }
+    // if we just started the game save the overlay Map.
     if (this.props.inProgress && prevProps.inProgress !== this.props.inProgress) {
       this.setState({ originalOverLayMap: this.state.overLayMap })
     }
   }
 
+  // initializes the Grid from level data or URL.
   initializeGridFromData(data) {
     if (this.container === null) return
     let yOffset = (this.container.offsetHeight - data.gridHeight * this.props.textureSize) / 2
@@ -300,6 +312,7 @@ export class Grid extends Component {
     })
     this.props.envIsReady()
   }
+  // initializes grid with texture size.
   initializeGridWithTextureSize(textureSize) {
     let gridWidth = Math.floor(this.container.offsetWidth / textureSize)
     let gridHeight = Math.floor(this.container.offsetHeight / textureSize)
@@ -327,7 +340,7 @@ export class Grid extends Component {
     })
     this.props.envIsReady()
   }
-
+  // function called by the characters to get their next move.
   getNextCharacterAction(type) {
     let action = getNextAction(this.state, this.props, type)
     if (action[0] !== 0 || action[1] !== 0) {
@@ -366,6 +379,7 @@ export class Grid extends Component {
   }
   componentDidMount() {
     let rendered = false
+    // if there is a map in the url
     if (
       this.props.URLParams !== null &&
       this.props.URLParams.initialTexturesMap !== undefined &&
@@ -380,13 +394,14 @@ export class Grid extends Component {
           this.props.URLParams.gridHeight,
           this.container
         )
-
+        // if the map in the url can fit in this screen without being too small or too big.
         if (
           textureSizeForURLMap <= calculateMaxTextureSize(window) &&
           textureSizeForURLMap >= calculateMinTextureSize(window)
         ) {
           rendered = true
           this.props.setTextureSize(textureSizeForURLMap, false)
+          // setTimeout to wait until state has been updated
           setTimeout(() => {
             this.initializeGridFromData(this.props.URLParams)
           }, 0)
@@ -411,8 +426,9 @@ export class Grid extends Component {
         this.initializeGridWithTextureSize(this.props.textureSize)
       }, 0)
     }
-
+    // reference for parent to use
     this.props.onRef(this)
+    // reset Grid on screen resize.
     window.addEventListener("resize", e => {
       this.props.onClickRestart()
       this.initializeGridWithTextureSize(this.props.textureSize)

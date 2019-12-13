@@ -20,6 +20,7 @@ Run Chicken is a game where the player AI uses A* to find its shortest path to t
 -   The left navbar allows you to edit the map in real time while the game is running an the AI will adapt to changes.
 -   The control panel at the bottom middle allows you to start and restart the game and control all things related to the environment.
 -   The share map button generates a link that you can send to friend that loads the map you have created when clicking the button. 
+-   The Follow cursor mode removes the chicken and makes the player follow the mouse of the player (click on touch screen)
 
 Note: You can load pre made levels created by the developer to get an idea of how everything fits together.
 

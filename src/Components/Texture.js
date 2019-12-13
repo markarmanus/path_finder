@@ -2,6 +2,8 @@ import React, { Component } from "react"
 import { TEXTURE_DATA } from "../Constants/Textures"
 import styled, { keyframes } from "styled-components"
 import { isTouchDevice } from "../HelperFunctions"
+
+// Randomizes Texture if there is many textures to use for one type (e.g multiple floor textures)
 const getTextureSrc = src => {
   if (Array.isArray(src)) {
     let random = Math.floor(Math.random() * src.length)
@@ -11,7 +13,9 @@ const getTextureSrc = src => {
     return src
   }
 }
+// Handles framing the image to crete an animation.
 const getAnimation = numberOfSprites => {
+  // an image with 4 frames will have a translationTo value of 75%.
   const translationTo = ((numberOfSprites - 1) / numberOfSprites) * 100
   const transform = keyframes`
   from { 
@@ -49,6 +53,7 @@ const ProgressBarUnder = styled.div`
   background-color: #661918;
   margin: auto;
   border-radius: 10px;
+  // health bar is 10% of textureSize
   height: ${props => props.textureSize * 0.1}px;
   overflow: hidden;
 `
@@ -72,6 +77,7 @@ export class Texture extends Component {
   setMouseOver(value) {
     if (this.state.mouseOver !== value) this.setState({ mouseOver: value })
   }
+  // To avoid unnecessary renders
   shouldComponentUpdate(nextProps, nextState) {
     return (
       nextProps.texture !== this.props.texture ||
@@ -138,7 +144,7 @@ export class Texture extends Component {
           }}
         >
           <div
-            style={{ width: "85%", height: "85%" }}
+            style={{ width: "90%", height: "90%" }}
             onMouseDown={e => {
               if (!isTouchDevice(window)) onMouseDown(e)
             }}

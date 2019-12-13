@@ -60,6 +60,7 @@ export class Character extends Component {
     )
   }
   componentDidMount() {
+    // create reference for the Grid to use.
     this.props.onRef(this)
   }
   onClickRestart() {
@@ -103,7 +104,6 @@ export class Character extends Component {
     this.setCorrectDirection(character.firstChild, direction)
     let stepsCount = Math.floor(this.props.textureSize / this.props.movementSpeed)
     let remainder = this.props.textureSize % this.props.movementSpeed
-
     let counter = 0
     if (this.state.currentMovementSpeed !== this.props.movementSpeed)
       this.setState({ currentMovementSpeed: this.props.movementSpeed })

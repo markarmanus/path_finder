@@ -23,7 +23,7 @@ export const TEXTURES = {
 }
 export const TEXTURE_DATA = {
   2: {
-    animationSpeed: "0.3s",
+    animationSpeed: "0.6s",
     animated: true,
     numberOfSprites: 4,
     src: "campFire.png",
