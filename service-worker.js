@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/4.3.1/workbox-sw.js");
 
 importScripts(
-  "//markarmanus.github.io/runChicken/precache-manifest.771b6c8e954b0e91946766200dd48b2a.js"
+  "//markarmanus.github.io/runChicken/precache-manifest.fcd9b9b93201f5c7f15b03ffcbbb46c1.js"
 );
 
 self.addEventListener('message', (event) => {
