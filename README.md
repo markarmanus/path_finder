@@ -1,68 +1,29 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+## Run Chicken
 
-In the project directory, you can run:
+Run Chicken is a game where the player AI uses A* to find its shortest path to the chicken and catch it. While it may seem simple, The player has a health bar that is damaged by campfires and the Chicken has its own AI that uses UCS and BFS to utilize the campfires to its advantage. Healthpacks can be added to the map to help give the player a push.
 
-### `npm start`
+### The website can be found here: https://markarmanus.github.io/runChicken/
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+## To Run locally:
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+1. Clone the Repo to your local device.
 
-### `npm test`
+2. Run `npm install`
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+3. Run `npm start`
 
-### `npm run build`
+4. The website should be hosted at http://localhost:3000/
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## How to Play.
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+-   The left navbar allows you to edit the map in real time while the game is running an the AI will adapt to changes.
+-   The control panel at the bottom middle allows you to start and restart the game and control all things related to the environment.
+-   The share map button generates a link that you can send to friend that loads the map you have created when clicking the button. 
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+Note: You can load pre made levels created by the developer to get an idea of how everything fits together.
 
-### `npm run eject`
+## How it Works.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+The application was created solely with React and CSS, to demonstrate the power of react rendering, All the AI code is in the AI file, and you are welcome to read the code. There is comments where ever needed to understand the code, other wise it should be easy to grasp from just reading the code.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
