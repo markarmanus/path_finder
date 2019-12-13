@@ -1,24 +1,24 @@
 {
   "files": {
-    "main.css": "//markarmanus.github.io/runChicken/static/css/main.eda72dcc.chunk.css",
-    "main.js": "//markarmanus.github.io/runChicken/static/js/main.13a66dbe.chunk.js",
-    "main.js.map": "//markarmanus.github.io/runChicken/static/js/main.13a66dbe.chunk.js.map",
-    "runtime-main.js": "//markarmanus.github.io/runChicken/static/js/runtime-main.3254cf2e.js",
-    "runtime-main.js.map": "//markarmanus.github.io/runChicken/static/js/runtime-main.3254cf2e.js.map",
-    "static/css/2.fb9ed26a.chunk.css": "//markarmanus.github.io/runChicken/static/css/2.fb9ed26a.chunk.css",
-    "static/js/2.9c578691.chunk.js": "//markarmanus.github.io/runChicken/static/js/2.9c578691.chunk.js",
-    "static/js/2.9c578691.chunk.js.map": "//markarmanus.github.io/runChicken/static/js/2.9c578691.chunk.js.map",
-    "index.html": "//markarmanus.github.io/runChicken/index.html",
-    "precache-manifest.fcd9b9b93201f5c7f15b03ffcbbb46c1.js": "//markarmanus.github.io/runChicken/precache-manifest.fcd9b9b93201f5c7f15b03ffcbbb46c1.js",
-    "service-worker.js": "//markarmanus.github.io/runChicken/service-worker.js",
-    "static/css/2.fb9ed26a.chunk.css.map": "//markarmanus.github.io/runChicken/static/css/2.fb9ed26a.chunk.css.map",
-    "static/css/main.eda72dcc.chunk.css.map": "//markarmanus.github.io/runChicken/static/css/main.eda72dcc.chunk.css.map"
+    "main.css": "/runChicken/static/css/main.eda72dcc.chunk.css",
+    "main.js": "/runChicken/static/js/main.d36b359b.chunk.js",
+    "main.js.map": "/runChicken/static/js/main.d36b359b.chunk.js.map",
+    "runtime-main.js": "/runChicken/static/js/runtime-main.ebaa956d.js",
+    "runtime-main.js.map": "/runChicken/static/js/runtime-main.ebaa956d.js.map",
+    "static/css/2.fb9ed26a.chunk.css": "/runChicken/static/css/2.fb9ed26a.chunk.css",
+    "static/js/2.43c67fed.chunk.js": "/runChicken/static/js/2.43c67fed.chunk.js",
+    "static/js/2.43c67fed.chunk.js.map": "/runChicken/static/js/2.43c67fed.chunk.js.map",
+    "index.html": "/runChicken/index.html",
+    "precache-manifest.e60e0c39d2ed4c4fe44a09145921d046.js": "/runChicken/precache-manifest.e60e0c39d2ed4c4fe44a09145921d046.js",
+    "service-worker.js": "/runChicken/service-worker.js",
+    "static/css/2.fb9ed26a.chunk.css.map": "/runChicken/static/css/2.fb9ed26a.chunk.css.map",
+    "static/css/main.eda72dcc.chunk.css.map": "/runChicken/static/css/main.eda72dcc.chunk.css.map"
   },
   "entrypoints": [
-    "static/js/runtime-main.3254cf2e.js",
+    "static/js/runtime-main.ebaa956d.js",
     "static/css/2.fb9ed26a.chunk.css",
-    "static/js/2.9c578691.chunk.js",
+    "static/js/2.43c67fed.chunk.js",
     "static/css/main.eda72dcc.chunk.css",
-    "static/js/main.13a66dbe.chunk.js"
+    "static/js/main.d36b359b.chunk.js"
   ]
 }
