@@ -1,7 +1,7 @@
 {
   "name": "run_chicken",
   "version": "0.1.0",
-  "homepage": "https://https://markarmanus.github.io/runChicken",
+  "homepage": "https://markarmanus.github.io/runChicken",
   "private": true,
   "dependencies": {
     "antd": "^3.25.2",
